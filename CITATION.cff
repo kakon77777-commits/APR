@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use APR, cite this repository and the specific theory paper or whitepaper you relied on."
+type: software
+title: "APR: Adaptive Perceptual Reading / Agentic Perception Runtime"
+abstract: "A research framework and executable MVP for task-, risk-, evidence-, and budget-aware perceptual governance."
+authors:
+  - name: "kakon77777-commits"
+repository-code: "https://github.com/kakon77777-commits/APR"
+url: "https://github.com/kakon77777-commits/APR"
+version: 0.10.0
+date-released: 2026-08-10
+keywords:
+  - adaptive perception
+  - agentic perception
+  - evidence governance
+  - multimodal agents
+  - persistent world state

@@ -1,0 +1,41 @@
+# Source integration manifest
+
+## Integration record
+
+- Integration date: 2026-08-10
+- Source directory: `D:\Ai\work together\ACR_適度認知論`
+- Destination repository: `https://github.com/kakon77777-commits/APR`
+- Canonical runtime baseline: `APR_Runtime_v0.10_Closed_Loop_Recovery_0x_Freeze.zip`
+- Archive inspection: all ten ZIPs extracted to an isolated staging directory; all entry paths were relative and traversal-free.
+- Version comparison: v0.10 is the cumulative file superset. Earlier runtime files are either byte-identical to v0.10 or superseded there, except the v0.1 generic smoke-test filename later preserved as versioned smoke-test records.
+- Repository policy: commit the integrated source tree and provenance hashes, not ten redundant binary snapshots.
+
+The source directory was not modified. Generated `__pycache__`, `.pyc`, build output, and the empty `tests/test_task_runtime.py.tmp` artifact were excluded.
+
+## Original input SHA-256
+
+```text
+af3a2f47490c46595c90452f1ef1a289271701d49d6aef25b2f130d98e4e8b1c  ACR_MVP_Runtime_規格_v0.1.md
+6fc80cdbbf3b5db3befd410a49b8fbb9fa22bde5c816210365228456b11746dd  ACR_工程白皮書_v0.1.md
+a07d7d421bb0cb681040f455bd4777f183d9f44f50fe4aa87b7d39894dbd2efa  APR_Paper01_Adaptive_Perceptual_Reading_v0.1.md
+741a181466ccd64c2e593cbc1673cfd52fdb09e8d99b6d01dbff0663b5ed56cd  APR_Paper02_Hierarchical_Differential_Perception_v0.1.md
+b58c9c159db4630fd7351582d7c6770fed5f8f0b984a2d1ffb1f36e3db01bf57  APR_Paper03_MultiScale_Visual_Reading_Reobservation_v0.1.md
+c3ee88bb159365588cf1603f6ed429a04dbefb8fb3e0b590594d2cac7ae5b794  APR_Paper04_Persistent_World_State_Differential_Reobservation_v0.1.md
+e13260ef1705cb554a1153e87ddec03132533b21fd3cc04190a3bcc20a92f64c  APR_Paper05_Perceptual_Budget_Allocation_v0.1.md
+38baa02d7c727ad9d8b20a7bc65c402d08614b0dc7775518981eb3324aaadbc1  APR_Paper06_CrossModal_Perceptual_Reading_v0.1.md
+2669ced7e0847e4a50812fe7044432b6e9bea92dbdda9325b1ec61aa72b81376  APR_Paper07_Agentic_Perception_Runtime_v0.1.md
+074d56b650108f8ef2dc1426ae65d24eb00dd0779919fbf07fb42bfb47b1a1e7  APR_Runtime_v0.10_Closed_Loop_Recovery_0x_Freeze.zip
+2721e53e97e62f3357f7a5f1e25c2b888333c93505ef0e53bbe9f2de9ea71f67  APR_Runtime_v0.2_Real_Stream.zip
+f4ac28998063236415986b60c039151b29925a7ce5eae1eae445bfbbf13303e0  APR_Runtime_v0.3_Semantic_Evidence_Layer.zip
+6c4c313fcfdf28a1deff1331828e35774c0387696a537c2d82639d07aaca5486  APR_Runtime_v0.4_Historical_Revisit_Browser_Native_State.zip
+5dccbcb3c2eefcc7ab11968c6bf9a7fbebb539e5f7f8d4017a87f951e06341dc  APR_Runtime_v0.5_Event_Native_Targeted_Subtree.zip
+fd74883f4f65441cacaab7e38fd92b11645a8fd7eb12742e1515d03354c8bfb6  APR_Runtime_v0.6_Unified_Event_Scheduler.zip
+d466eaea25ca321d1c26885fb6b5df6fef95deb1efded580ac647ab7fd1f6a87  APR_Runtime_v0.7_Perceptual_Need_Graph_Task_Aware_Routing.zip
+a39d59240285b5a648d28b0a6f2910c91ab74d1821491163350eb04c80bfa4f4  APR_Runtime_v0.8_Action_Readiness_Evidence_Preconditions.zip
+9c6593ec96b3bbb5f3d99d97d7c725f5042d4da6d599af690f0741fe179cd826  APR_Runtime_v0.9_Action_Outcome_Verification_Recovery.zip
+1b7fda71e6995b60938cf11c00d17cb8a95e6d4cc663357994a0d4a6bae7fb1f  APR_Unified_Whitepaper_and_Runtime_MVP_v0.1.zip
+6fefe8fbec0f47aeaf7c728b1346ac68bc3e48225f30be2b938507feab17d17e  WHITEPAPER_APR_Runtime_v1.0.md
+836721f80577996b9a404b9f93ba5d0df5cf139b58bafe561d8d29c49c30cc18  適度認知論_智能為什麼不應對每一個問題都使用最大思考深度_v0.1.md
+```
+
+The APR papers and unified whitepaper outside the ZIPs were byte-identical to the copies bundled in v0.10.

@@ -1,0 +1,84 @@
+APR Runtime MVP v0.6 — Validation Record
+Date: 2026-08-09
+
+1. Python compileall
+   PASS
+
+2. Unit tests
+   PASS — 40/40
+   Executed with PYTHONWARNINGS=error.
+
+New v0.6 coverage:
+- burst coalescing on one target
+- duplicate fingerprint accounting
+- critical-event queue admission
+- low-value event dropping under backpressure
+- age-based anti-starvation
+- periodic refresh scheduling
+- scheduler persistence to Event Ledger
+- async handler execution
+- missing-handler isolation
+- StreamEvent -> unified NativeEvent ingress
+- Event Ledger retention
+- Evidence Archive retention
+- protection of evidence referenced by current World State
+- deletion of unreferenced archived assets
+
+Regression coverage:
+- v0.1 belief / budget / NO_OBSERVATION / REVISIT
+- v0.2 real stream / volatile state / screen delta / UIA
+- v0.3 semantic ROI / archive / semantic evidence
+- v0.4 historical revisit / browser native state
+- v0.5 browser CDP events / targeted DOM+AX / Event Ledger
+
+3. Scheduler burst/backpressure demo
+   PASS
+
+Input:
+- 20 DOM.characterDataModified events on the same node
+- 5 low-value WinEvent focus events
+- 1 critical semantic.warning event
+
+Observed scheduler metrics:
+- ingested: 26
+- queued: 6
+- coalesced: 19
+- dropped: 1
+- evicted: 1
+- pending work items: 5
+
+Dispatch order began with:
+1. semantic.warning (priority ~1.078)
+2. coalesced DOM.characterDataModified x20 (priority ~0.380)
+3. remaining low-value focus events
+
+This verifies:
+critical admission + burst coalescing + bounded queue.
+
+4. v0.5 Event Ledger regression demo
+   PASS
+
+5. v0.2 synthetic Real Stream regression demo
+   PASS
+
+Architectural milestone:
+
+v0.1 belief control
+v0.2 real stream
+v0.3 semantic evidence
+v0.4 historical revisit
+v0.5 event-native targeted read
+v0.6 unified event-flow governance
+
+Core v0.6 flow:
+
+many sources
+ -> Event Ledger (raw historical fidelity)
+ -> UnifiedEventScheduler (bounded work set)
+ -> dedup/coalesce/priority/backpressure/aging
+ -> AsyncEventExecutor
+ -> targeted handler
+ -> Evidence / World State
+
+Retention safety rule verified:
+Storage pressure does not delete evidence currently referenced by World State.

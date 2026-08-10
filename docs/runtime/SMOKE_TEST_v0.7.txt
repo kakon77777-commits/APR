@@ -1,0 +1,65 @@
+APR Runtime MVP v0.7 — Validation Record
+Date: 2026-08-09
+
+1. Python compileall
+   PASS
+
+2. Full regression test suite with warnings-as-errors
+   PASS — 52/52
+
+New v0.7 coverage:
+- unknown perceptual need urgency
+- satisfied need / graph readiness
+- need dependency blocking
+- stale fact re-enters need frontier
+- relevant event task boost
+- unrelated event downweight
+- critical event preservation
+- need-driven refresh generation
+- current query -> refresh / answer-from-state
+- historical query -> Historical Revisit routing
+- task-relevant event outranks larger irrelevant event
+- raw Event Ledger preserves source significance while Scheduler uses routed priority
+
+3. Task-aware smoke demo
+   PASS
+
+Observed:
+raw browser_dom_changed significance = 0.350
+raw pointer.motion significance       = 0.550
+
+After task routing:
+browser_dom_changed routed = 0.866
+pointer.motion routed       = 0.451
+
+Reason:
+browser_dom_changed affected the current high-risk unsatisfied fact:
+  download.failed
+
+Need frontier before evidence:
+  download.failed -> UNKNOWN -> urgency 0.933
+
+Need-driven refresh emitted:
+  apr.need.refresh
+
+After evidence:
+  download.failed = true, confidence=0.98
+  Need Graph ready = true
+  Frontier empty
+
+Raw Event Ledger remained:
+  browser_dom_changed = 0.35
+  pointer.motion = 0.55
+
+This verifies:
+  Historical event semantics != task-conditioned scheduler priority
+
+Architecture milestone:
+
+v0.1 Belief Control
+v0.2 Real Stream
+v0.3 Semantic Evidence
+v0.4 Historical Revisit
+v0.5 Event-Native Targeted Read
+v0.6 Event Flow Governance
+v0.7 Task-Aware Information-Need Governance

@@ -1,0 +1,67 @@
+APR Runtime MVP v0.5 — Validation Record
+Date: 2026-08-08
+
+1. Python compileall
+   PASS
+
+2. Unit tests
+   PASS — 28/28
+   Re-run with PYTHONWARNINGS=error::ResourceWarning: PASS
+
+New v0.5 coverage:
+- persistent Event Ledger append/query/compaction
+- BrowserCDPEventSource bounded DOM seed
+- CDP DOM event queue and ledger persistence
+- DOM.documentUpdated -> document generation increment
+- targeted DOM.describeNode
+- targeted DOM.getOuterHTML
+- targeted Accessibility.getPartialAXTree
+- stale/document-updated node -> document reseed
+- Event != WorldState invariant
+- verified event -> Evidence -> World State
+
+Regression coverage:
+- v0.1 belief-control / NO_OBSERVATION / budget / conflict
+- v0.2 real stream / frame delta / volatile desktop state
+- v0.3 ROI semantic evidence / archive
+- v0.4 historical revisit / browser native state
+
+3. Event Ledger demo
+   PASS
+
+Observed:
+DOM.documentUpdated  sig=0.90 browser.document
+DOM.childNodeInserted sig=0.55 browser.dom.node:10
+
+4. Browser native-state regression demo
+   PASS
+
+5. Live-source implementation status
+
+Browser CDP event source:
+- IMPLEMENTED
+- requires intentionally exposed local Chromium CDP endpoint for live validation
+- uses Playwright CDPSession
+- DOM/AX event subscriptions included
+
+Windows WinEvent source:
+- IMPLEMENTED
+- requires Windows interactive session for live validation
+- SetWinEventHook + message pump
+- targeted UIA reader by HWND included
+
+6. Core correctness invariant
+
+NativeEvent != Evidence != WorldState
+
+Events are stored first. A targeted read verifies the affected node/window.
+Only verified Evidence may revise World State.
+
+7. Resource lifecycle
+
+SQLite connections in EvidenceArchive/EventLedger are explicitly closed.
+The full test suite passes when ResourceWarning is treated as an error.
+
+8. Next milestone
+
+v0.6 — Unified Event Scheduler + Backpressure + Retention

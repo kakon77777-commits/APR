@@ -1,0 +1,134 @@
+{
+  "runtime": {
+    "budget_units": 100,
+    "default_min_confidence": 0.8,
+    "high_risk_threshold": 0.75
+  },
+  "channels": {
+    "sensor": {
+      "reliability": 0.99,
+      "cost": 1.0,
+      "directness": 1.0
+    },
+    "vision": {
+      "reliability": 0.94,
+      "cost": 5.0,
+      "directness": 0.65
+    },
+    "audio": {
+      "reliability": 0.9,
+      "cost": 3.0,
+      "directness": 0.55
+    },
+    "structured": {
+      "reliability": 0.98,
+      "cost": 0.5,
+      "directness": 1.0
+    }
+  },
+  "real_stream": {
+    "poll_interval_seconds": 0.35,
+    "screen": {
+      "monitor": 1,
+      "stride": 14,
+      "pixel_threshold": 0.1,
+      "change_ratio_threshold": 0.025
+    },
+    "uia": {
+      "foreground_only": true,
+      "max_elements": 120
+    },
+    "escalation_threshold": 0.45
+  },
+  "browser_native_state": {
+    "endpoint_url": "http://127.0.0.1:9222",
+    "page_index": -1,
+    "aria_depth": 5,
+    "max_dom_elements": 350,
+    "max_text_per_element": 80,
+    "poll_interval_seconds": 0.5
+  },
+  "historical_revisit": {
+    "prefer_fact_evidence_ids": true,
+    "require_archived_asset": true,
+    "min_resolution_confidence": 0.85
+  },
+  "event_native": {
+    "browser": {
+      "seed_depth": 2,
+      "pierce": true,
+      "queue_limit": 5000
+    },
+    "windows": {
+      "enable_winevents": true,
+      "queue_limit": 5000,
+      "targeted_uia_max_elements": 200
+    },
+    "ledger": {
+      "path": "runtime_data/events.sqlite3",
+      "compact_low_significance_after_seconds": 86400,
+      "keep_significance_at_least": 0.75
+    },
+    "polling_fallback": {
+      "enabled": true,
+      "periodic_refresh_seconds": 10.0
+    }
+  },
+  "scheduler": {
+    "max_queue": 512,
+    "coalesce_window_seconds": 0.2,
+    "duplicate_window_seconds": 0.1,
+    "critical_significance": 0.85,
+    "admission_margin": 0.05,
+    "aging_rate": 0.015,
+    "max_age_boost": 0.25,
+    "max_concurrency": 4,
+    "handler_timeout_seconds": 30.0
+  },
+  "retention": {
+    "event_keep_seconds": 86400,
+    "event_keep_significance_at_least": 0.75,
+    "evidence_keep_seconds": 604800,
+    "evidence_keep_confidence_at_least": 0.9,
+    "delete_unreferenced_assets": true
+  },
+  "perceptual_need_graph": {
+    "task_aware_need_boost": 0.85,
+    "unrelated_event_discount": 0.82,
+    "critical_event_floor": 0.85,
+    "critical_risk": 0.8
+  },
+  "query_routing": {
+    "default_scope": "current",
+    "historical_requires_asset": true
+  },
+  "action_readiness": {
+    "high_risk_threshold": 0.75,
+    "critical_risk_threshold": 0.9,
+    "high_risk_min_confidence": 0.9,
+    "critical_min_confidence": 0.95,
+    "high_risk_min_independent_evidence": 2,
+    "critical_min_modalities": 1,
+    "block_high_risk_contradictions": true
+  },
+  "action_outcome": {
+    "default_verification_timeout_seconds": 5.0,
+    "require_post_action_evidence": true,
+    "default_max_retries": 1,
+    "retry_safe_by_default": false,
+    "link_execution_evidence": true
+  },
+  "closed_loop_recovery": {
+    "default_reversibility": "compensatable",
+    "default_retry_mode": "never",
+    "default_max_attempts": 1,
+    "default_max_recovery_steps": 8,
+    "default_overall_timeout_seconds": 30,
+    "irreversible_retry_requires_idempotency_key": true,
+    "default_partial_success_policy": "replan",
+    "trace_export": [
+      "json",
+      "markdown"
+    ]
+  }
+}

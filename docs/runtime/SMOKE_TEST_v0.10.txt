@@ -1,0 +1,93 @@
+APR Runtime MVP v0.10 — Validation Record
+Date: 2026-08-09
+
+1. Python compileall / import path
+   PASS
+
+2. Full regression suite with warnings-as-errors
+   PASS — 86/86 tests
+
+New v0.10 coverage:
+- executable retry orchestration;
+- retry lineage via parent_execution_id;
+- retry succeeds only under declared policy;
+- irreversible action refuses unsafe automatic retry;
+- DEDUPLICATED irreversible retry requires idempotency key;
+- keyed irreversible retry can succeed without duplicate lineage ambiguity;
+- compensating action passes its own readiness gate;
+- compensating action verifies its own postconditions;
+- compensating action may retry only under its own recovery policy;
+- blocked compensating action -> ROLLBACK_FAILED;
+- partial success -> explicit ACCEPT / REPLAN / COMPENSATE policy;
+- cooperative deadline timeout;
+- cooperative cancellation;
+- recovery trace JSON export;
+- recovery trace Markdown export.
+
+3. Closed-loop recovery demo
+   PASS
+
+Observed:
+
+attempt 1
+  readiness -> ALLOW
+  execute
+  observe outcome
+  postcondition -> RETRY
+
+retry policy
+  IDEMPOTENT
+  max_attempts = 2
+  -> retry allowed
+
+attempt 2
+  readiness -> ALLOW
+  execute
+  observe outcome
+  postcondition -> SUCCESS
+
+Final:
+  status = SUCCESS
+  retry lineage preserved
+  World State = door.open
+
+4. Recovery invariants verified
+
+A.
+Expected postcondition != observed World State
+
+B.
+Pre-action evidence != proof of post-action success
+
+C.
+Rollback != time reversal
+
+D.
+Compensation is a separately gated and verified action
+
+E.
+Irreversible action != automatically retryable action
+
+F.
+Historical intent / action / execution / outcome / recovery are separate audit layers
+
+5. 0.x convergence
+
+v0.1  Belief Control
+v0.2  Real Stream
+v0.3  Semantic Evidence
+v0.4  Historical Revisit
+v0.5  Event-Native Targeted Read
+v0.6  Event Flow Governance
+v0.7  Task-Aware Need Graph
+v0.8  Evidence-Gated Action
+v0.9  Action Outcome Verification
+v0.10 Closed-Loop Recovery Orchestrator
+
+The 0.x line is now a freeze candidate.
+
+Next stage:
+- v1.0 productization;
+- APR benchmark;
+- live Windows/browser/VLM integration validation;
+- learned VOI/routing/recovery policies.

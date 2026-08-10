@@ -1,0 +1,74 @@
+APR Runtime MVP v0.9 — Validation Record
+Date: 2026-08-09
+
+1. Python compileall
+   PASS
+
+2. Full regression suite with ResourceWarning-as-error discipline
+   PASS — 75/75 tests
+
+Resource lifecycle correction:
+- ExecutionLedger now explicitly closes SQLite connections with contextlib.closing.
+- EventLedger and EvidenceArchive already use explicit closing.
+- GC validation produced no remaining ResourceWarning.
+
+New v0.9 coverage:
+- pre-action matching state cannot prove post-action success
+- post-action matching evidence -> SUCCESS
+- observed failed postcondition -> RETRY when retry-safe
+- exhausted retry budget -> REPLAN
+- configured rollback failure -> ROLLBACK
+- verification timeout -> recovery decision
+- execution receipt SQLite round trip
+- execution -> evidence provenance link
+- action execution does not invent expected postcondition in World State
+- outcome verification links only post-action evidence
+- executed action automatically schedules apr.action.outcome.verify
+- postcondition verification event carries execution_id + affected_facts
+
+3. Main Action Outcome demo
+   PASS
+
+Observed:
+
+ALLOW
+ -> execute action
+ -> before new observation: VERIFY
+ -> post-action evidence arrives
+ -> SUCCESS
+ -> execution receipt = completed
+ -> postcondition evidence linked to execution ID
+
+4. Recovery decision demo
+   PASS
+
+Observed:
+
+retryable failure, attempt 1 -> RETRY
+retry budget exhausted          -> REPLAN
+rollback policy configured      -> ROLLBACK rollback_deploy
+
+Critical correctness invariants verified:
+
+ExpectedPostcondition != ObservedWorldState
+
+PreActionEvidence != ProofOfPostActionSuccess
+
+Action expectation is never directly written into Persistent World State.
+By default, successful outcome verification requires supporting Evidence with
+an observation timestamp at or after the completed action execution boundary.
+
+Execution provenance:
+
+ActionSpec
+ -> ALLOW readiness decision
+ -> ExecutionReceipt
+ -> apr.action.outcome.verify event
+ -> post-action Evidence
+ -> execution_evidence link
+ -> OutcomeDecision
+
+Current recovery boundary:
+- v0.9 returns RETRY / REPLAN / ROLLBACK directives.
+- It does not yet autonomously execute recovery actions.
+- v0.10 should orchestrate retry lineage and rollback through the same gates.

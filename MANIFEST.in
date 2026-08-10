@@ -1,0 +1,9 @@
+include CHANGELOG.md
+include CITATION.cff
+include CONTRIBUTING.md
+include SECURITY.md
+include STATUS.md
+recursive-include config *.json
+recursive-include docs *.md *.txt
+recursive-include examples *.py
+recursive-include papers *.md

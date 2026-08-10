@@ -1,0 +1,85 @@
+APR Runtime MVP v0.4 — Validation Record
+Date: 2026-08-07
+
+1. Python compileall
+   PASS
+
+2. Unit tests
+   PASS — 22/22
+
+New v0.4 coverage:
+- EvidenceArchive.by_ids()
+- best archived evidence with asset
+- historical ROI revisit
+- revisit provenance (`revisit_of`)
+- contradiction resolution from archived evidence
+- clean failure when historical asset is unavailable
+- browser native-state stream
+- browser navigation event
+- ARIA change event
+- DOM change event
+- focus change event
+- browser structured goal -> native observation -> NO_OBSERVATION
+
+Regression coverage:
+- v0.1 belief control / budget / NO_OBSERVATION / REVISIT
+- v0.2 real-stream / volatile-state / frame delta / UIA
+- v0.3 ROI / PNG / SQLite archive / semantic escalation
+
+3. Historical revisit demo
+   PASS
+
+Observed:
+old belief: severity=low
+new evidence: severity=high
+state: CONTRADICTED
+  -> archived original ROI
+  -> semantic historical re-read
+  -> new evidence linked with revisit_of
+  -> severity=high
+  -> state=KNOWN
+
+4. Browser native-state synthetic demo
+   PASS
+
+Observed:
+browser_navigation  significance=0.75
+browser_aria_changed significance=0.50
+browser_dom_changed  significance=0.45
+browser_focus_changed significance=0.25
+
+World State updated:
+browser.url
+browser.title
+browser.aria.digest
+browser.dom.digest
+browser.dom.element_count
+browser.active_element
+
+5. CDP / live browser source
+   IMPLEMENTED, NOT LIVE-VALIDATED IN THIS HOST
+
+Reason:
+The current execution environment has no deliberately exposed interactive
+Chromium CDP endpoint.
+
+Local validation command:
+    pip install -e ".[browser]"
+    python examples/run_browser_native_state.py
+
+Safety behavior:
+- CDP source attaches to an existing Chromium browser.
+- APR source close() does NOT call browser.close() on that user-managed browser.
+- The demo does not use screenshots or a cloud VLM.
+- CDP endpoints should only be exposed on trusted local interfaces.
+
+Architecture milestone:
+
+v0.1  Belief-control semantics
+v0.2  Real stream -> low-level delta
+v0.3  Delta -> ROI -> semantic evidence -> persistent belief
+v0.4  Persistent evidence -> historical revisit
+      + browser native state -> structured world state
+
+Next:
+v0.5 Event-Native + Targeted Subtree Runtime

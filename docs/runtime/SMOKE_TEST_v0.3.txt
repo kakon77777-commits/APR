@@ -1,0 +1,70 @@
+APR Runtime MVP v0.3 — Validation Record
+Date: 2026-08-07
+
+1. Python compileall
+   PASS
+
+2. Unit tests
+   PASS — 18/18
+
+   New v0.3 coverage:
+   - ROI crop geometry
+   - bbox padding/clamping
+   - dependency-free PNG encoding
+   - SQLite Evidence Archive persistence
+   - ROI asset persistence
+   - semantic Evidence Contract -> World State
+   - semantic summary state
+   - Fast Loop -> selective Slow Loop escalation
+
+   Regression coverage:
+   - v0.1 fresh state -> NO_OBSERVATION
+   - stale state -> INSPECT
+   - non-volatile conflict -> REVISIT
+   - evidence provenance
+   - budget rules
+   - v0.2 frame delta
+   - volatile foreground/UIA/screen facts
+   - structured desktop adapter
+
+3. Semantic pipeline demo
+   PASS
+
+   Observed:
+   screen_change
+      -> ROI crop
+      -> semantic inspection
+      -> desktop.screen.semantic_summary
+      -> desktop.warning.visible
+      -> desktop.warning.severity
+      -> SQLite rows
+      -> exact ROI PNG provenance
+
+4. v0.2 synthetic Real Stream demo
+   PASS
+
+Architecture verified:
+
+FAST LOOP
+raw/structured desktop
+ -> cheap delta/event
+ -> significance
+
+SLOW LOOP (only selected events)
+ -> changed ROI
+ -> SemanticInspector
+ -> Evidence Contract
+ -> SQLite + ROI asset
+ -> Persistent World State
+
+Environment limitation:
+- Current execution host is not an interactive Windows desktop.
+- Windows MSS/UIA/Win32 live-source code remains implemented but must be
+  live-validated on the target Windows machine.
+
+Provider boundary:
+- No cloud VLM SDK is required by APR core.
+- Real local/cloud VLMs can be connected through CallableSemanticInspector
+  or CommandSemanticInspector.
+
+No screenshot is automatically sent to an external service.

@@ -1,0 +1,45 @@
+APR Runtime MVP v0.2 — Validation Record
+Date: 2026-08-07
+
+Validated in the current execution environment:
+
+1. Python compileall
+   PASS
+
+2. Unit test suite
+   PASS — 12/12 tests
+
+   Coverage includes:
+   - v0.1 fresh state -> NO_OBSERVATION
+   - stale state -> INSPECT
+   - non-volatile conflict -> REVISIT
+   - evidence provenance
+   - budget spending rules
+   - frame delta identical / changed / geometry-change cases
+   - foreground-window change event
+   - volatile facts do not become false contradictions
+   - UI Automation digest change event
+   - screen-change event
+   - real-style structured desktop adapter
+
+3. Synthetic real-stream demo
+   PASS
+
+   Observed event chain:
+   foreground_changed -> SEARCH
+   uia_changed        -> SEARCH
+   screen_change      -> SKIM
+
+4. v0.1 compatibility demo
+   PASS
+
+Platform limitation:
+- Current validation host is not a Windows interactive desktop.
+- Win32ForegroundWindowSource, python-mss desktop capture, and pywinauto UIA
+  are implemented but require local Windows execution for live-source validation.
+
+Windows command:
+    pip install -e ".[desktop]"
+    python examples/run_real_desktop.py
+
+No screenshot is sent to any external model by v0.2.

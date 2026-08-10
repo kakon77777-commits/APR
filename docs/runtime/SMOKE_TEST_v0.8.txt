@@ -1,0 +1,83 @@
+APR Runtime MVP v0.8 — Validation Record
+Date: 2026-08-09
+
+1. Python compileall
+   PASS
+
+2. Full regression suite with warnings-as-errors
+   PASS — 65/65 tests
+
+New v0.8 coverage:
+- unknown action precondition -> VERIFY
+- verified false semantic precondition -> BLOCK
+- satisfied preconditions -> ALLOW
+- high-risk action evidence floor
+- independent evidence count
+- same archived asset revisit does not count as independent evidence
+- action-specific max_age stricter than WorldState TTL
+- contradiction blocks by default
+- singleton authoritative confirmation can explicitly opt out of global diversity floor
+- ActionSpec registration -> Perceptual Need Graph
+- VERIFY -> apr.action.verify scheduler work
+- action-specific evidence deficit keeps explicit urgency even when generic NeedGraph sees the fact as KNOWN
+- guarded execution never calls protected function on BLOCK
+- guarded execution calls protected function only on ALLOW
+
+3. Action Readiness demo
+   PASS
+
+Observed sequence:
+
+1) No required facts available
+   -> VERIFY
+
+2) payee.identity has two independent sources
+   invoice.total has only one
+   explicit user confirmation is valid
+   -> VERIFY
+
+3) invoice.total receives a second independent source
+   -> ALLOW
+
+4) explicit authorization changes to false
+   -> BLOCK
+
+Key runtime semantics verified:
+
+UNKNOWN != FALSE
+
+UNKNOWN / STALE / LOW-CONFIDENCE / UNDER-EVIDENCED
+    -> VERIFY
+
+VERIFIED SEMANTIC PRECONDITION FALSE
+    -> BLOCK
+
+SUFFICIENT CURRENT EVIDENCE
+    -> ALLOW
+
+Evidence independence:
+- Re-reading the same archived asset does not manufacture a second independent source.
+- Adapters may provide metadata.independence_group.
+- Otherwise the default group is modality:source.
+
+Execution boundary:
+- Protected action functions are invoked only after ALLOW.
+- VERIFY can automatically schedule APR perception work.
+- BLOCK never executes the action.
+
+Task-aware priority provenance:
+- Event Ledger keeps raw source significance.
+- Scheduler may receive task/action-specific routed priority.
+- Action-specific verification urgency is carried explicitly so an under-evidenced KNOWN fact is not downweighted merely because the generic Need Graph sees it as satisfied.
+
+Next milestone:
+v0.9 — Action Outcome Verification + Recovery
+
+Target loop:
+
+ALLOW
+ -> execute
+ -> expected state transition
+ -> observe outcome
+ -> verify postconditions
+ -> SUCCESS / RETRY / REPLAN / ROLLBACK
