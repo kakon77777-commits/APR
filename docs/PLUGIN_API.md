@@ -64,6 +64,39 @@ Use `strict=True` when any load failure must stop startup:
 registry.load_entry_points(strict=True)
 ```
 
+## Built-in hosted semantic inspectors
+
+APR ships an explicit plugin for OpenAI Responses and Anthropic Messages vision inspection. It
+uses only the Python standard library, performs no network work during registration or component
+creation, reads credentials lazily at inspection time, and never writes credentials into evidence.
+
+```python
+from apr_runtime import HostedSemanticInspectorsPlugin, PluginRegistry
+
+registry = PluginRegistry()
+registry.install(HostedSemanticInspectorsPlugin())
+
+openai = registry.create_component("semantic_inspector", "openai")
+anthropic = registry.create_component("semantic_inspector", "anthropic")
+```
+
+Set `OPENAI_API_KEY` and/or `ANTHROPIC_API_KEY` in the process environment. Defaults are bounded
+for inexpensive smoke tests: `gpt-5.6-luna`, `claude-haiku-4-5-20251001`, 512 maximum output
+tokens, 60-second timeout, a 5 MB image limit, and no automatic retries. OpenAI requests use the
+Responses API with `store=false`; both providers use JSON Schema output and return token/cost
+metadata through `SemanticResult.raw`. Fact lifecycle is deterministic APR policy rather than
+model output: hosted inspectors default to `fact_volatile=True` and `fact_ttl=5.0`, both
+configurable at component creation.
+
+Run the synthetic cross-provider check only after setting both variables:
+
+```powershell
+python examples/run_hosted_semantic_comparison.py --provider both
+```
+
+The example makes exactly one generation request per selected provider. API pricing and model
+availability change, so verify current provider documentation before changing the defaults.
+
 ## Failure and trust semantics
 
 - A plugin whose `register()` raises is rolled back to the pre-install registry state.

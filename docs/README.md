@@ -33,6 +33,10 @@ The versioned files are in [`../papers/`](../papers/).
 
 [`releases/`](releases/) contains the v0.2–v0.10 engineering notes and the 0.x convergence report.
 
+## Experiments
+
+- [`experiments/HOSTED_SEMANTIC_SMOKE_2026-08-10.md`](experiments/HOSTED_SEMANTIC_SMOKE_2026-08-10.md) — bounded OpenAI/Anthropic vision-plugin validation, corrections, cost, and limitations.
+
 ## Provenance
 
 [`provenance/SOURCE_MANIFEST.md`](provenance/SOURCE_MANIFEST.md) records how the isolated source folder and ten cumulative archives were integrated, including SHA-256 values for every original input.

@@ -8,19 +8,20 @@ The original cumulative v0.10 snapshot has been integrated into a standalone rep
 
 ## Verified locally
 
-- 99/99 unit and integration-style tests;
+- 107/107 unit and integration-style tests;
 - package import and explicit public export surface;
 - transactional plugin registration and entry-point failure reporting;
 - finite/range validation for core confidence, risk, TTL, cost, and budget values;
 - UTF-8 integrity across source, theory, papers, and runtime documentation;
 - source distribution and wheel build;
-- synthetic closed-loop recovery demonstration.
+- synthetic closed-loop recovery demonstration;
+- bounded live OpenAI/Anthropic semantic-inspector validation on one generated destructive-confirmation fixture, including structured evidence ingestion and reported token/cost metadata.
 
 ## Not claimed by this status
 
 - production readiness;
 - empirical proof of the full APR theory;
-- live VLM, audio, sensor, or robot validation;
+- broad or repeated live VLM validation, and any live audio, sensor, or robot validation;
 - unattended high-risk desktop/browser action safety;
 - distributed durability, authentication, authorization, or process isolation;
 - benchmark superiority over full-processing baselines.

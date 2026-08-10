@@ -11,12 +11,16 @@ All notable changes to this repository are documented here.
 - Transactional plugin installation, duplicate protection, strict loading, and structured failure reports.
 - Core numeric and identity validation for evidence, goals, actions, budgets, channel profiles, and TTL values.
 - CI, package metadata, citation metadata, security guidance, and source provenance manifest.
+- Standard-library OpenAI Responses and Anthropic Messages semantic-inspector components, exposed through an explicit built-in plugin.
+- A bounded cross-provider visual smoke test with structured facts, token/cost reporting, and a synthetic destructive-confirmation fixture.
 
 ### Changed
 
 - Unified Python formatting and import ordering across the cumulative runtime.
 - Completed the package-level `__all__` export list while preserving existing direct imports.
 - Removed generated cache files and the empty `tests/test_task_runtime.py.tmp` artifact from the integrated tree.
+- Moved semantic fact volatility and TTL out of model output and into deterministic inspector configuration.
+- Added canonical candidate labels to the cross-provider experiment so equivalent concepts merge consistently without disclosing ground truth.
 
 ### Fixed
 

@@ -70,6 +70,14 @@ from .executor import (
     ExecutionResult,
 )
 from .frame_delta import FrameDelta, FrameDeltaDetector
+from .hosted_semantic import (
+    DEFAULT_ANTHROPIC_MODEL,
+    DEFAULT_OPENAI_MODEL,
+    AnthropicMessagesSemanticInspector,
+    HostedSemanticError,
+    HostedSemanticInspectorsPlugin,
+    OpenAIResponsesSemanticInspector,
+)
 
 # v0.3 semantic evidence layer
 from .image_ops import (
@@ -235,6 +243,8 @@ __all__ = [
     "Goal",
     "HistoricalRevisitRecord",
     "HistoricalRevisitService",
+    "HostedSemanticError",
+    "HostedSemanticInspectorsPlugin",
     "IngestReport",
     "LoadedPlugin",
     "MSSScreenSource",
@@ -245,6 +255,7 @@ __all__ = [
     "NeedRefreshPlanner",
     "NeedState",
     "ObservationSpec",
+    "OpenAIResponsesSemanticInspector",
     "OutcomeDecision",
     "OutcomeDecisionKind",
     "OutcomeExecutionResult",
@@ -318,6 +329,9 @@ __all__ = [
     "Win32NativeEventSource",
     "WinEventConfig",
     "WorldState",
+    "AnthropicMessagesSemanticInspector",
+    "DEFAULT_ANTHROPIC_MODEL",
+    "DEFAULT_OPENAI_MODEL",
     "__version__",
     "clamp_bbox",
     "crop_frame",
