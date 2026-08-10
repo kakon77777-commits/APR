@@ -36,6 +36,7 @@ The versioned files are in [`../papers/`](../papers/).
 ## Experiments
 
 - [`experiments/HOSTED_SEMANTIC_SMOKE_2026-08-10.md`](experiments/HOSTED_SEMANTIC_SMOKE_2026-08-10.md) — bounded OpenAI/Anthropic vision-plugin validation, corrections, cost, and limitations.
+- [`experiments/GOOGLE_VERTEX_IMAGE_GENERATION_SMOKE_2026-08-10.md`](experiments/GOOGLE_VERTEX_IMAGE_GENERATION_SMOKE_2026-08-10.md) — real Google Vertex 1K image generation, visual QA, API-contract corrections, and bounded cost evidence.
 
 ## Provenance
 

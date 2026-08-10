@@ -32,6 +32,7 @@ desktop = [
   "pywinauto>=0.6.8; platform_system == 'Windows'",
 ]
 browser = ["playwright>=1.49"]
+vertex = ["google-auth>=2.40,<3"]
 dev = [
   "build>=1.2,<2",
   "pytest>=8,<10",
