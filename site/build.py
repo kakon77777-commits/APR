@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SOURCE = ROOT / "site" / "src"
+PUBLIC = ROOT / "site" / "public"
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(SOURCE))
 
@@ -98,6 +99,10 @@ def public_path(locale: str, slug: str) -> str:
 def source_url(evidence_id: str) -> str:
     root = f"https://github.com/kakon77777-commits/APR/blob/{SITE['source_ref']}/"
     return root + EVIDENCE[evidence_id]
+
+
+def canonical_url(locale: str, slug: str) -> str:
+    return SITE["origin"] + public_path(locale, slug)
 
 
 def render_sections(page: dict[str, object]) -> str:
@@ -294,17 +299,120 @@ def write_text(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8", newline="\n")
 
 
+def render_llms() -> str:
+    lines = [
+        f"# {SITE['name']}",
+        "",
+        "APR is a research architecture for bounded, evidence-governed perception.",
+        f"Canonical site: {SITE['origin']}/",
+        f"Version: {SITE['version']}",
+        f"Release status: {SITE['release_status']}",
+        "",
+        "## Pages",
+    ]
+    for locale in LOCALES:
+        language = "English" if locale == "en" else "Traditional Chinese"
+        lines.append(f"### {language}")
+        for route in ROUTES:
+            lines.append(
+                f"- {route.title[locale]}: {canonical_url(locale, route.slug)} — "
+                f"{route.description[locale]}"
+            )
+        lines.append("")
+    lines.extend(
+        (
+            "## Boundaries",
+            "- Static research documentation and a deterministic offline educational lab.",
+            "- No hosted agent, Provider call, API, authentication, analytics, or desktop control.",
+            "- Local MCP is planned and not implemented; discovery grants no execution authority.",
+            "- Release-candidate evidence is not a production-readiness claim.",
+            "",
+        )
+    )
+    return "\n".join(lines)
+
+
+def render_sitemap() -> str:
+    locations = [
+        f"  <url><loc>{html.escape(canonical_url(locale, route.slug))}</loc></url>"
+        for locale in LOCALES
+        for route in ROUTES
+    ]
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + "\n".join(locations)
+        + "\n</urlset>\n"
+    )
+
+
+def render_404() -> str:
+    return (
+        "<!doctype html>\n"
+        '<html lang="en">\n'
+        "<head>\n"
+        '  <meta charset="utf-8">\n'
+        '  <meta name="viewport" content="width=device-width, initial-scale=1">\n'
+        '  <meta name="robots" content="noindex">\n'
+        "  <title>Page not found · 找不到頁面 | APR</title>\n"
+        '  <link rel="stylesheet" href="/assets/styles.css">\n'
+        "</head>\n"
+        "<body>\n"
+        '  <main id="main" tabindex="-1">\n'
+        '    <section class="hero" aria-labelledby="not-found-title">\n'
+        '      <p class="kicker">404</p>\n'
+        '      <h1 id="not-found-title">Page not found · 找不到頁面</h1>\n'
+        "      <p>The requested APR page is unavailable. 請求的 APR 頁面不存在。</p>\n"
+        '      <div class="hero-actions">\n'
+        '        <a class="control" href="/">English home</a>\n'
+        '        <a class="control" href="/zh-TW/">繁體中文首頁</a>\n'
+        "      </div>\n"
+        "    </section>\n"
+        "  </main>\n"
+        "</body>\n"
+        "</html>\n"
+    )
+
+
+def copy_public(source: Path, output: Path) -> None:
+    if not source.exists():
+        return
+    files = sorted(path for path in source.rglob("*") if path.is_file())
+    collisions = [
+        path.relative_to(source)
+        for path in files
+        if (output / path.relative_to(source)).exists()
+    ]
+    if collisions:
+        joined = ", ".join(path.as_posix() for path in collisions)
+        raise FileExistsError(f"public asset collides with generated output: {joined}")
+    for source_path in files:
+        destination = output / source_path.relative_to(source)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source_path, destination)
+
+
 def build(output: Path) -> dict[str, object]:
     if output.exists():
         shutil.rmtree(output)
     output.mkdir(parents=True)
 
-    pages: list[dict[str, str]] = []
+    pages: list[dict[str, object]] = []
     for locale in LOCALES:
         for route in ROUTES:
             destination = route_path(output, locale, route.slug)
             write_text(destination, render_page(route, locale))
-            pages.append({"locale": locale, "path": destination.relative_to(output).as_posix()})
+            pages.append(
+                {
+                    "locale": locale,
+                    "slug": route.slug,
+                    "title": route.title[locale],
+                    "description": route.description[locale],
+                    "path": destination.relative_to(output).as_posix(),
+                    "url": canonical_url(locale, route.slug),
+                    "evidence_ids": list(PAGES[locale][route.slug]["evidence_ids"]),
+                }
+            )
 
     assets = SOURCE / "assets"
     for asset in sorted(assets.iterdir()):
@@ -333,6 +441,14 @@ def build(output: Path) -> dict[str, object]:
         )
         + "\n",
     )
+    write_text(output / "llms.txt", render_llms())
+    write_text(output / "sitemap.xml", render_sitemap())
+    write_text(
+        output / "robots.txt",
+        "User-agent: *\nAllow: /\n" f"Sitemap: {SITE['origin']}/sitemap.xml\n",
+    )
+    write_text(output / "404.html", render_404())
+    copy_public(PUBLIC, output)
     return index
 
 

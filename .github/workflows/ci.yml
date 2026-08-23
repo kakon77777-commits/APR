@@ -9,6 +9,21 @@ permissions:
   contents: read
 
 jobs:
+  client-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Install site tooling
+        run: npm ci --prefix site
+      - name: Client behavior tests
+        run: npm run test:client --prefix site
+
   test:
     runs-on: ubuntu-latest
     strategy:

@@ -49,8 +49,29 @@ Perceive
 | `docs/runtime/` | 架構、協議、保留政策與各版 smoke-test 記錄 |
 | `docs/releases/` | v0.2–v0.10 工程筆記與 0.x 收斂報告 |
 | `docs/provenance/` | 原始壓縮包與來源文件的 SHA-256 清單 |
+| `site/` | 雙語靜態研究網站、離線 Lab、機器探索檔案與 Cloudflare Static Assets 封裝 |
 
 完整索引見 [`docs/README.md`](docs/README.md)。
+
+## 公開靜態網站
+
+`site/build.py` 只使用儲存庫內的 APR 內容與確定性固定案例，產生英文、繁體中文、
+離線 Lab、`llms.txt`、`ai/site.json`、sitemap、robots、雙語 404 與靜態安全標頭。
+瀏覽器端不呼叫模型 Provider、API、localhost、桌面 adapter 或未實作的 MCP 服務。
+
+從儲存庫根目錄進行本機驗證與靜態預覽：
+
+```powershell
+Push-Location site
+npm ci
+npm run validate
+npm run deploy:dry
+Pop-Location
+python -m http.server 8000 --directory site/dist
+```
+
+`npm run deploy:dry` 只執行 Wrangler dry-run。`npm run deploy` 是另外保留的正式發布入口；
+production deployment 必須另行取得明確授權，並不屬於本機驗證流程。
 
 ## 快速開始
 
@@ -179,8 +200,9 @@ ruff check apr_runtime tests examples
 python -m build
 ```
 
-目前本地整合驗證為 **117/117 tests passed**；另有 OpenAI／Anthropic 受控合成視覺
-smoke test，以及 Google Vertex 的真實 1K 影像生成與人工視覺驗證。這仍不等同真實
+目前離線整合驗證為 **148/148 Python tests**，另有 **6/6 dependency-free Node client
+tests**；歷史上另有 OpenAI／Anthropic 受控合成視覺 smoke test，以及 Google Vertex
+的真實 1K 影像生成與人工視覺驗證。這仍不等同真實
 桌面、Chromium CDP、廣泛 VLM／影像生成 benchmark 或長時間可靠性驗證。
 
 ## 引用

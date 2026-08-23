@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "apr-evemisslab",
+  "compatibility_date": "2026-08-24",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  },
+  "routes": [
+    { "pattern": "apr.evemisslab.com", "custom_domain": true }
+  ]
+}

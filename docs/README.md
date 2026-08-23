@@ -7,6 +7,15 @@
 - [`../papers/APR_Paper07_Agentic_Perception_Runtime_v0.1.md`](../papers/APR_Paper07_Agentic_Perception_Runtime_v0.1.md) — capstone paper and unified agentic-perception architecture.
 - [`PLUGIN_API.md`](PLUGIN_API.md) — stable extension boundary for downstream projects.
 
+## Public research site
+
+[`../site/`](../site/) contains the standard-library static compiler, bilingual offline APR
+Lab, machine-discovery surfaces, restrictive `_headers`, and an entrypoint-free Cloudflare
+Workers Static Assets package. Run `npm ci` and `npm run validate` inside `site/`; use
+`npm run deploy:dry` for schema/configuration packaging evidence. The generated site has no
+Provider, API, binding, secret, localhost, desktop-control, analytics, or authentication path.
+Production deployment remains a separate explicitly authorized operation.
+
 ## Theory roots
 
 The ACR documents explain cognitive proportionality; APR applies proportional resource governance to perception.

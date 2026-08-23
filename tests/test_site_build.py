@@ -6,16 +6,28 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT_PATH = ROOT / "site/src/content.py"
+BUILD_PATH = ROOT / "site/build.py"
 
 
 def load_content():
     spec = importlib.util.spec_from_file_location("apr_site_content", CONTENT_PATH)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Cannot load site content from {CONTENT_PATH}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def load_build():
+    spec = importlib.util.spec_from_file_location("apr_site_build", BUILD_PATH)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Cannot load site builder from {BUILD_PATH}")
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
@@ -60,6 +72,185 @@ class SiteBuildTests(unittest.TestCase):
             self.build(output)
             data = json.loads((output / "ai/site.json").read_text(encoding="utf-8"))
             self.assertEqual("apr-site-index/v1", data["schema"])
+
+    def test_machine_surfaces_share_content_identifiers_and_canonical_urls(self):
+        content = load_content()
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw)
+            self.build(output)
+
+            for relative in (
+                "llms.txt",
+                "ai/site.json",
+                "sitemap.xml",
+                "robots.txt",
+                "404.html",
+                "_headers",
+            ):
+                self.assertTrue((output / relative).is_file(), relative)
+
+            index = json.loads((output / "ai/site.json").read_text(encoding="utf-8"))
+            pages = {(page["locale"], page["slug"]): page for page in index["pages"]}
+            llms = (output / "llms.txt").read_text(encoding="utf-8")
+            for locale in content.LOCALES:
+                for route in content.ROUTES:
+                    key = (locale, route.slug)
+                    segments = [
+                        part
+                        for part in (
+                            "zh-TW" if locale == "zh-TW" else "",
+                            route.slug,
+                        )
+                        if part
+                    ]
+                    canonical = content.SITE["origin"] + "/" + "/".join(segments)
+                    if segments:
+                        canonical += "/"
+                    self.assertEqual(route.title[locale], pages[key]["title"])
+                    self.assertEqual(route.description[locale], pages[key]["description"])
+                    self.assertEqual(canonical, pages[key]["url"])
+                    self.assertEqual(
+                        list(content.PAGES[locale][route.slug]["evidence_ids"]),
+                        pages[key]["evidence_ids"],
+                    )
+                    self.assertIn(route.title[locale], llms)
+                    self.assertIn(canonical, llms)
+
+    def test_sitemap_robots_and_bilingual_404_are_bounded(self):
+        content = load_content()
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw)
+            self.build(output)
+
+            self.assertTrue((output / "sitemap.xml").is_file(), "sitemap.xml")
+            self.assertTrue((output / "robots.txt").is_file(), "robots.txt")
+            self.assertTrue((output / "404.html").is_file(), "404.html")
+            sitemap = ET.parse(output / "sitemap.xml")
+            namespace = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+            urls = {element.text for element in sitemap.findall("sm:url/sm:loc", namespace)}
+            expected = {
+                content.SITE["origin"]
+                + ("/zh-TW" if locale == "zh-TW" else "")
+                + (f"/{route.slug}" if route.slug else "")
+                + ("/" if locale == "zh-TW" or route.slug else "/")
+                for locale in content.LOCALES
+                for route in content.ROUTES
+            }
+            self.assertEqual(expected, urls)
+            self.assertNotIn(f"{content.SITE['origin']}/404.html", urls)
+
+            robots = (output / "robots.txt").read_text(encoding="utf-8")
+            self.assertEqual(
+                "User-agent: *\nAllow: /\n"
+                f"Sitemap: {content.SITE['origin']}/sitemap.xml\n",
+                robots,
+            )
+            not_found = (output / "404.html").read_text(encoding="utf-8")
+            self.assertIn('<meta name="robots" content="noindex">', not_found)
+            self.assertIn('href="/"', not_found)
+            self.assertIn('href="/zh-TW/"', not_found)
+            self.assertIn("Page not found", not_found)
+            self.assertIn("找不到頁面", not_found)
+
+    def test_security_headers_are_copied_and_restrict_connections(self):
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw)
+            self.build(output)
+            self.assertTrue((output / "_headers").is_file(), "_headers")
+            headers = (output / "_headers").read_text(encoding="utf-8")
+            self.assertIn("Content-Security-Policy:", headers)
+            self.assertIn("default-src 'self'", headers)
+            self.assertIn("connect-src 'self'", headers)
+            self.assertIn("object-src 'none'", headers)
+            self.assertIn("form-action 'none'", headers)
+            self.assertIn("frame-ancestors 'none'", headers)
+            self.assertIn("Referrer-Policy: no-referrer", headers)
+            self.assertIn("X-Content-Type-Options: nosniff", headers)
+
+    def test_public_copy_is_recursive_and_rejects_generated_collisions(self):
+        build = load_build()
+        self.assertTrue(hasattr(build, "copy_public"), "site builder must expose copy_public")
+        with (
+            tempfile.TemporaryDirectory() as public_raw,
+            tempfile.TemporaryDirectory() as output_raw,
+        ):
+            public = Path(public_raw)
+            output = Path(output_raw)
+            (public / "nested").mkdir()
+            (public / "nested/policy.txt").write_text("bounded\n", encoding="utf-8")
+            build.copy_public(public, output)
+            self.assertEqual(
+                "bounded\n", (output / "nested/policy.txt").read_text(encoding="utf-8")
+            )
+            (public / "nested/policy.txt").unlink()
+            (public / "nested").rmdir()
+            (output / "nested/policy.txt").unlink()
+            (output / "nested").rmdir()
+
+            (public / "ai").mkdir()
+            (public / "ai/site.json").write_text("collision\n", encoding="utf-8")
+            (output / "ai").mkdir()
+            (output / "ai/site.json").write_text("generated\n", encoding="utf-8")
+            with self.assertRaises(FileExistsError):
+                build.copy_public(public, output)
+            self.assertEqual(
+                "generated\n", (output / "ai/site.json").read_text(encoding="utf-8")
+            )
+
+    def test_generated_artifact_has_no_windows_absolute_path(self):
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw)
+            self.build(output)
+            joined = b"\n".join(path.read_bytes() for path in output.rglob("*") if path.is_file())
+            self.assertNotRegex(joined.decode("utf-8", errors="ignore"), r"[A-Za-z]:\\")
+
+    def test_site_package_pins_wrangler_and_validates_client_behavior(self):
+        package_path = ROOT / "site/package.json"
+        self.assertTrue(package_path.is_file(), package_path)
+        package = json.loads(package_path.read_text(encoding="utf-8"))
+        self.assertEqual("apr-evemisslab-site", package["name"])
+        self.assertTrue(package["private"])
+        self.assertEqual("0.10.0", package["version"])
+        self.assertEqual("module", package.get("type"))
+        self.assertEqual({"wrangler": "4.92.0"}, package["devDependencies"])
+        self.assertEqual("python build.py --output dist", package["scripts"]["build"])
+        self.assertEqual(
+            "cd .. && node --test tests/site_app.test.mjs",
+            package["scripts"]["test:client"],
+        )
+        self.assertEqual(
+            "npm run build && npm run test:client",
+            package["scripts"]["validate"],
+        )
+        self.assertEqual(
+            "npm run validate && wrangler deploy --dry-run",
+            package["scripts"]["deploy:dry"],
+        )
+        self.assertEqual("npm run validate && wrangler deploy", package["scripts"]["deploy"])
+
+    def test_wrangler_config_is_entrypoint_free_assets_only_and_has_no_binding(self):
+        config_path = ROOT / "site/wrangler.jsonc"
+        self.assertTrue(config_path.is_file(), config_path)
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            {"$schema", "name", "compatibility_date", "assets", "routes"}, set(config)
+        )
+        self.assertEqual("node_modules/wrangler/config-schema.json", config["$schema"])
+        self.assertEqual("apr-evemisslab", config["name"])
+        self.assertEqual("2026-08-24", config["compatibility_date"])
+        self.assertEqual(
+            {"directory": "./dist", "not_found_handling": "404-page"}, config["assets"]
+        )
+        self.assertEqual(
+            [{"pattern": "apr.evemisslab.com", "custom_domain": True}], config["routes"]
+        )
+
+    def test_ci_installs_node_and_runs_the_package_client_test(self):
+        workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+        self.assertIn("actions/setup-node@", workflow)
+        self.assertIn('node-version: "24"', workflow)
+        self.assertIn("npm ci --prefix site", workflow)
+        self.assertIn("npm run test:client --prefix site", workflow)
 
     def test_locales_share_route_and_evidence_identifiers(self):
         content = load_content()
