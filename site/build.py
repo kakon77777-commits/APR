@@ -171,9 +171,7 @@ def render_lab(locale: str) -> str:
         fieldsets.append(
             f'      <fieldset data-control="{name}">\n'
             f"        <legend>{legend}</legend>\n"
-            '        <div class="lab-options">\n'
-            + "\n".join(labels)
-            + "\n        </div>\n"
+            '        <div class="lab-options">\n' + "\n".join(labels) + "\n        </div>\n"
             "      </fieldset>"
         )
     data_labels = " ".join(
@@ -187,9 +185,7 @@ def render_lab(locale: str) -> str:
         f'      <form class="apr-lab" data-apr-lab data-locale="{locale}" '
         f'data-load-error="{html.escape(ui["load_error"], quote=True)}" '
         f'data-missing-error="{html.escape(ui["missing_error"], quote=True)}" '
-        f'{data_labels} aria-describedby="lab-educational-notice">\n'
-        + "\n".join(fieldsets)
-        + "\n"
+        f'{data_labels} aria-describedby="lab-educational-notice">\n' + "\n".join(fieldsets) + "\n"
         f'      <output class="lab-output" data-lab-output aria-live="polite" aria-busy="true">{html.escape(ui["loading"])}</output>\n'
         "      </form>\n"
         "    </section>"
@@ -379,9 +375,7 @@ def copy_public(source: Path, output: Path) -> None:
         return
     files = sorted(path for path in source.rglob("*") if path.is_file())
     collisions = [
-        path.relative_to(source)
-        for path in files
-        if (output / path.relative_to(source)).exists()
+        path.relative_to(source) for path in files if (output / path.relative_to(source)).exists()
     ]
     if collisions:
         joined = ", ".join(path.as_posix() for path in collisions)
@@ -445,7 +439,7 @@ def build(output: Path) -> dict[str, object]:
     write_text(output / "sitemap.xml", render_sitemap())
     write_text(
         output / "robots.txt",
-        "User-agent: *\nAllow: /\n" f"Sitemap: {SITE['origin']}/sitemap.xml\n",
+        f"User-agent: *\nAllow: /\nSitemap: {SITE['origin']}/sitemap.xml\n",
     )
     write_text(output / "404.html", render_404())
     copy_public(PUBLIC, output)

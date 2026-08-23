@@ -141,8 +141,7 @@ class SiteBuildTests(unittest.TestCase):
 
             robots = (output / "robots.txt").read_text(encoding="utf-8")
             self.assertEqual(
-                "User-agent: *\nAllow: /\n"
-                f"Sitemap: {content.SITE['origin']}/sitemap.xml\n",
+                f"User-agent: *\nAllow: /\nSitemap: {content.SITE['origin']}/sitemap.xml\n",
                 robots,
             )
             not_found = (output / "404.html").read_text(encoding="utf-8")
@@ -193,9 +192,7 @@ class SiteBuildTests(unittest.TestCase):
             (output / "ai/site.json").write_text("generated\n", encoding="utf-8")
             with self.assertRaises(FileExistsError):
                 build.copy_public(public, output)
-            self.assertEqual(
-                "generated\n", (output / "ai/site.json").read_text(encoding="utf-8")
-            )
+            self.assertEqual("generated\n", (output / "ai/site.json").read_text(encoding="utf-8"))
 
     def test_generated_artifact_has_no_windows_absolute_path(self):
         with tempfile.TemporaryDirectory() as raw:
@@ -232,9 +229,7 @@ class SiteBuildTests(unittest.TestCase):
         config_path = ROOT / "site/wrangler.jsonc"
         self.assertTrue(config_path.is_file(), config_path)
         config = json.loads(config_path.read_text(encoding="utf-8"))
-        self.assertEqual(
-            {"$schema", "name", "compatibility_date", "assets", "routes"}, set(config)
-        )
+        self.assertEqual({"$schema", "name", "compatibility_date", "assets", "routes"}, set(config))
         self.assertEqual("node_modules/wrangler/config-schema.json", config["$schema"])
         self.assertEqual("apr-evemisslab", config["name"])
         self.assertEqual("2026-08-24", config["compatibility_date"])
@@ -411,7 +406,14 @@ class SiteBuildTests(unittest.TestCase):
 
     def test_locales_describe_exported_lab_matrix_and_interface_as_current(self):
         content = load_content()
-        for locale, current_matrix, current_controls, current_interface, inaccurate_ui, deferred_ui in (
+        for (
+            locale,
+            current_matrix,
+            current_controls,
+            current_interface,
+            inaccurate_ui,
+            deferred_ui,
+        ) in (
             (
                 "en",
                 "The exported scenario matrix reports",
