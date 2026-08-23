@@ -16,6 +16,10 @@ Workers Static Assets package. Run `npm ci` and `npm run validate` inside `site/
 Provider, API, binding, secret, localhost, desktop-control, analytics, or authentication path.
 Production deployment remains a separate explicitly authorized operation.
 
+The measured locally accepted release-candidate record is
+[`experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md`](experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md).
+It preserves the not-merged, not-live boundary and the runtime evidence `source_ref`.
+
 ## Theory roots
 
 The ACR documents explain cognitive proportionality; APR applies proportional resource governance to perception.
@@ -44,6 +48,7 @@ The versioned files are in [`../papers/`](../papers/).
 
 ## Experiments
 
+- [`experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md`](experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md) — measured local acceptance of the public-site candidate; not merged or deployed.
 - [`experiments/HOSTED_SEMANTIC_SMOKE_2026-08-10.md`](experiments/HOSTED_SEMANTIC_SMOKE_2026-08-10.md) — bounded OpenAI/Anthropic vision-plugin validation, corrections, cost, and limitations.
 - [`experiments/GOOGLE_VERTEX_IMAGE_GENERATION_SMOKE_2026-08-10.md`](experiments/GOOGLE_VERTEX_IMAGE_GENERATION_SMOKE_2026-08-10.md) — real Google Vertex 1K image generation, visual QA, API-contract corrections, and bounded cost evidence.
 

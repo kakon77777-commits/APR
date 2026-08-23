@@ -200,8 +200,9 @@ ruff check apr_runtime tests examples
 python -m build
 ```
 
-目前離線整合驗證為 **148/148 Python tests**，另有 **6/6 dependency-free Node client
-tests**；歷史上另有 OpenAI／Anthropic 受控合成視覺 smoke test，以及 Google Vertex
+目前離線整合驗證為 **149/149 Python tests**，另有 **6/6 dependency-free Node client
+tests**。本機候選接受紀錄（含 scoped Ruff、靜態產物、Wrangler dry-run 與本機瀏覽器
+證據）見 [`docs/experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md`](docs/experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md)；它記錄的是尚未合併、尚未上線的 locally accepted release candidate。歷史上另有 OpenAI／Anthropic 受控合成視覺 smoke test，以及 Google Vertex
 的真實 1K 影像生成與人工視覺驗證。這仍不等同真實
 桌面、Chromium CDP、廣泛 VLM／影像生成 benchmark 或長時間可靠性驗證。
 
