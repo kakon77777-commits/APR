@@ -205,7 +205,7 @@ PAGES = {
         "lab": _page(
             "Offline decision lab",
             "Inspect a bounded educational projection.",
-            "The lab uses a finite scenario matrix exported from APR Python fixtures. Controls perform local lookups only; the page does not execute policy or contact a service.",
+            "The finite scenario matrix and local lookup controls will be added in a later task. This page remains a static educational projection; it does not execute policy or contact a service.",
             "Lab notice",
             "budget",
             "Educational projection — bounded, deterministic, offline",
@@ -279,16 +279,16 @@ PAGES = {
         ),
         "mcp": _page(
             "Local capability boundary",
-            "MCP remains local, human-allowlisted, and deferred.",
-            "The approved architecture permits only local stdio or loopback transport. The public website cannot connect to, grant authority to, or stand in for a local server.",
+            "Local MCP is planned and not implemented.",
+            "Transport details will be documented with accepted MCP evidence. The public website cannot grant authority to or stand in for a local server.",
             "Implementation status",
             "uncertain",
             "not_implemented",
             ("mcp_boundary", "security"),
             (
                 {
-                    "title": "Local-only transport",
-                    "body": "A future MCP process is constrained to stdio or an explicitly bound loopback interface. No public MCP endpoint, remote tunnel, or browser-to-local connection is part of this site.",
+                    "title": "Deferred MCP documentation",
+                    "body": "Transport details will be documented when accepted MCP evidence is available. This page does not describe an available local service.",
                 },
                 {
                     "title": "Human authority",
@@ -393,7 +393,7 @@ PAGES = {
         "lab": _page(
             "離線決策實驗室",
             "檢視有界的教育投影。",
-            "實驗室使用由 APR Python 固定案例匯出的有限情境矩陣。控制項只做本機查表；頁面不執行政策，也不聯絡任何服務。",
+            "有限情境矩陣與本機查表控制項將在後續任務加入。此頁目前仍是靜態教育投影；它不執行政策，也不聯絡任何服務。",
             "實驗室聲明",
             "budget",
             "教育投影 — 有界、確定性、離線",
@@ -455,16 +455,16 @@ PAGES = {
         ),
         "mcp": _page(
             "本機能力邊界",
-            "MCP 維持本機、人類允許清單與延後狀態。",
-            "核准架構只允許本機 stdio 或 loopback 傳輸。公開網站不能連線、授權，也不能取代本機伺服器。",
+            "本機 MCP 規劃中且尚未實作。",
+            "傳輸細節將隨已接受的 MCP 證據一併記錄。公開網站不能授權，也不能取代本機伺服器。",
             "實作狀態",
             "uncertain",
             "not_implemented",
             ("mcp_boundary", "security"),
             (
                 {
-                    "title": "僅限本機傳輸",
-                    "body": "未來 MCP 程序限於 stdio 或明確綁定的 loopback 介面。此網站不包含公開 MCP 端點、遠端通道或瀏覽器到本機的連線。",
+                    "title": "延後的 MCP 文件",
+                    "body": "待有已接受的 MCP 證據後，才會記錄傳輸細節。此頁不描述可用的本機服務。",
                 },
                 {
                     "title": "人類權限",

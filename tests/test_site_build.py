@@ -152,8 +152,43 @@ class SiteBuildTests(unittest.TestCase):
             joined = "\n".join(path.read_text(encoding="utf-8") for path in output.rglob("*.html"))
             self.assertNotIn("production-ready", joined.lower())
             self.assertNotIn("open-source licence", joined.lower())
-            self.assertIn("release candidate", joined.lower())
-            self.assertIn("not_implemented", joined)
+
+    def test_locales_keep_mcp_claims_within_the_available_evidence_boundary(self):
+        content = load_content()
+        for locale, planned in (
+            ("en", "planned and not implemented"),
+            ("zh-TW", "規劃中且尚未實作"),
+        ):
+            mcp = content.PAGES[locale]["mcp"]
+            mcp_copy = " ".join(
+                [mcp["heading"], mcp["summary"], *(section["body"] for section in mcp["sections"])]
+            )
+            self.assertIn(planned, mcp_copy)
+            self.assertNotIn("stdio", mcp_copy)
+            self.assertNotIn("loopback", mcp_copy)
+
+    def test_locales_describe_lab_scenarios_as_a_deferred_task(self):
+        content = load_content()
+        for locale, deferred_lab in (
+            ("en", "will be added in a later task"),
+            ("zh-TW", "將在後續任務加入"),
+        ):
+            lab = content.PAGES[locale]["lab"]
+            lab_copy = " ".join([lab["summary"], *(section["body"] for section in lab["sections"])])
+            self.assertIn(deferred_lab, lab_copy)
+
+    def test_each_locale_has_truthful_mcp_and_release_candidate_messages(self):
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw)
+            self.build(output)
+            for _locale, prefix, release_candidate in (
+                ("en", Path(), "release candidate"),
+                ("zh-TW", Path("zh-TW"), "發布候選版"),
+            ):
+                mcp = (output / prefix / "mcp/index.html").read_text(encoding="utf-8")
+                status = (output / prefix / "status/index.html").read_text(encoding="utf-8")
+                self.assertIn("not_implemented", mcp)
+                self.assertIn(release_candidate, status.lower())
 
     def test_built_css_contains_accessible_apr_visual_system(self):
         with tempfile.TemporaryDirectory() as raw:
