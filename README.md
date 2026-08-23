@@ -195,8 +195,8 @@ JPEG，而不偽造副檔名。實測圖片、踩坑、成本與限制見
 ```powershell
 python -m unittest discover -s tests -v
 python -m pytest
-ruff format --check apr_runtime tests examples
-ruff check apr_runtime tests examples
+ruff format --check apr_runtime tests examples site
+ruff check apr_runtime tests examples site
 python -m build
 ```
 

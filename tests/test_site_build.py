@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+import html as html_module
 import importlib.util
 import json
+import os
+import re
 import subprocess
 import sys
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT_PATH = ROOT / "site/src/content.py"
@@ -34,6 +38,19 @@ def load_build():
     return module
 
 
+def snapshot_tree(root: Path) -> dict[str, tuple[str, bytes]]:
+    snapshot: dict[str, tuple[str, bytes]] = {}
+    if not root.exists():
+        return snapshot
+    for path in sorted(root.rglob("*")):
+        relative = path.relative_to(root).as_posix()
+        if path.is_dir():
+            snapshot[relative] = ("directory", b"")
+        elif path.is_file():
+            snapshot[relative] = ("file", path.read_bytes())
+    return snapshot
+
+
 class SiteBuildTests(unittest.TestCase):
     def build(self, output: Path) -> None:
         subprocess.run(
@@ -52,6 +69,224 @@ class SiteBuildTests(unittest.TestCase):
                 chinese = output / "zh-TW" / route / "index.html"
                 self.assertTrue(english.is_file(), english)
                 self.assertTrue(chinese.is_file(), chinese)
+
+    def test_default_output_is_repository_site_dist_independent_of_cwd(self):
+        build = load_build()
+        previous_cwd = Path.cwd()
+        with tempfile.TemporaryDirectory() as raw:
+            try:
+                os.chdir(raw)
+                with mock.patch.object(sys, "argv", ["site/build.py"]):
+                    args = build.parse_args()
+            finally:
+                os.chdir(previous_cwd)
+
+        self.assertEqual(ROOT / "site/dist", args.output)
+
+    def test_protected_roots_and_their_ancestors_are_rejected_before_mutation(self):
+        build = load_build()
+
+        class MutationAttempt(RuntimeError):
+            pass
+
+        protected = {
+            build.ROOT,
+            build.ROOT / "site",
+            build.SOURCE,
+            build.PUBLIC,
+            build.ROOT / ".git",
+        }
+        candidates = protected | {parent for path in protected for parent in path.parents}
+
+        def mutation_attempt(*_args, **_kwargs):
+            raise MutationAttempt("the builder attempted mutation before rejecting the output")
+
+        for candidate in sorted(candidates, key=str):
+            with self.subTest(candidate=candidate):
+                with (
+                    mock.patch.object(build.shutil, "rmtree", side_effect=mutation_attempt),
+                    mock.patch.object(build.shutil, "copyfile", side_effect=mutation_attempt),
+                    mock.patch.object(Path, "mkdir", side_effect=mutation_attempt),
+                    mock.patch.object(Path, "write_text", side_effect=mutation_attempt),
+                ):
+                    try:
+                        build.build(candidate)
+                    except ValueError:
+                        pass
+                    except MutationAttempt as exc:
+                        self.fail(str(exc))
+                    else:
+                        self.fail(f"protected output was accepted: {candidate}")
+
+    def test_source_public_and_git_descendants_are_rejected_before_mutation(self):
+        build = load_build()
+
+        class MutationAttempt(RuntimeError):
+            pass
+
+        def mutation_attempt(*_args, **_kwargs):
+            raise MutationAttempt("the builder attempted mutation before rejecting the output")
+
+        git_marker = build.ROOT / ".git"
+        git_pointer = git_marker.read_text(encoding="utf-8").strip()
+        self.assertTrue(git_pointer.startswith("gitdir:"), git_pointer)
+        actual_git_dir = Path(git_pointer.removeprefix("gitdir:").strip())
+        if not actual_git_dir.is_absolute():
+            actual_git_dir = git_marker.parent / actual_git_dir
+        actual_git_dir = actual_git_dir.resolve()
+
+        for candidate in (
+            build.SOURCE / "assets",
+            build.PUBLIC / "generated-child",
+            build.ROOT / ".git" / "objects",
+            actual_git_dir / "generated-child",
+        ):
+            with self.subTest(candidate=candidate):
+                with (
+                    mock.patch.object(build.shutil, "rmtree", side_effect=mutation_attempt),
+                    mock.patch.object(build.shutil, "copyfile", side_effect=mutation_attempt),
+                    mock.patch.object(Path, "mkdir", side_effect=mutation_attempt),
+                    mock.patch.object(Path, "write_text", side_effect=mutation_attempt),
+                ):
+                    try:
+                        build.build(candidate)
+                    except ValueError:
+                        pass
+                    except MutationAttempt as exc:
+                        self.fail(str(exc))
+                    else:
+                        self.fail(f"protected descendant was accepted: {candidate}")
+
+    def test_non_empty_unowned_output_is_rejected_and_preserved_byte_for_byte(self):
+        build = load_build()
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw) / "unowned"
+            (output / "ai").mkdir(parents=True)
+            (output / "ai/site.json").write_text('{"schema":"other-site/v1"}\n', encoding="utf-8")
+            (output / "keep.bin").write_bytes(b"\x00keep-this-output\xff")
+            before = snapshot_tree(output)
+
+            try:
+                build.build(output)
+            except ValueError:
+                pass
+            else:
+                self.fail("a non-empty unowned output directory was rebuilt")
+
+            self.assertEqual(before, snapshot_tree(output))
+
+    def test_empty_existing_output_can_be_built_without_rmtree_on_the_caller_path(self):
+        build = load_build()
+        original_rmtree = build.shutil.rmtree
+        with tempfile.TemporaryDirectory() as raw:
+            parent = Path(raw)
+            output = parent / "empty-output"
+            output.mkdir()
+
+            def guarded_rmtree(path, *args, **kwargs):
+                if Path(path) == output:
+                    raise AssertionError("rmtree called on caller-selected output")
+                return original_rmtree(path, *args, **kwargs)
+
+            try:
+                with mock.patch.object(build.shutil, "rmtree", side_effect=guarded_rmtree):
+                    build.build(output)
+            except AssertionError as exc:
+                self.fail(str(exc))
+
+            self.assertTrue((output / "ai/site.json").is_file())
+            self.assertEqual({output}, set(parent.iterdir()))
+
+    def test_owned_output_rebuild_removes_stale_files_without_rmtree_on_output(self):
+        build = load_build()
+        original_rmtree = build.shutil.rmtree
+        with tempfile.TemporaryDirectory() as raw:
+            parent = Path(raw)
+            output = parent / "owned-output"
+            build.build(output)
+            (output / "stale.bin").write_bytes(b"stale")
+
+            def guarded_rmtree(path, *args, **kwargs):
+                if Path(path) == output:
+                    raise AssertionError("rmtree called on caller-selected output")
+                return original_rmtree(path, *args, **kwargs)
+
+            try:
+                with mock.patch.object(build.shutil, "rmtree", side_effect=guarded_rmtree):
+                    build.build(output)
+            except AssertionError as exc:
+                self.fail(str(exc))
+
+            self.assertFalse((output / "stale.bin").exists())
+            expected_files = {
+                "index.html",
+                "runtime/index.html",
+                "lab/index.html",
+                "papers/index.html",
+                "mcp/index.html",
+                "status/index.html",
+                "zh-TW/index.html",
+                "zh-TW/runtime/index.html",
+                "zh-TW/lab/index.html",
+                "zh-TW/papers/index.html",
+                "zh-TW/mcp/index.html",
+                "zh-TW/status/index.html",
+                "assets/app.js",
+                "assets/styles.css",
+                "ai/site.json",
+                "data/demo-scenarios.json",
+                "llms.txt",
+                "sitemap.xml",
+                "robots.txt",
+                "404.html",
+                "_headers",
+                "favicon.svg",
+            }
+            self.assertEqual(
+                set(),
+                {relative for relative in expected_files if not (output / relative).is_file()},
+            )
+            self.assertEqual({output}, set(parent.iterdir()))
+
+    def test_invalid_generation_preserves_previous_output_byte_for_byte(self):
+        build = load_build()
+        with tempfile.TemporaryDirectory() as raw:
+            parent = Path(raw)
+            output = parent / "owned-output"
+            build.build(output)
+            before = snapshot_tree(output)
+
+            with mock.patch.object(build, "export_scenarios", return_value={}):
+                with self.assertRaises(ValueError):
+                    build.build(output)
+
+            self.assertEqual(before, snapshot_tree(output))
+            self.assertEqual({output}, set(parent.iterdir()))
+
+    def test_failed_final_rename_restores_previous_output_and_cleans_siblings(self):
+        build = load_build()
+        original_replace = Path.replace
+        with tempfile.TemporaryDirectory() as raw:
+            parent = Path(raw)
+            output = parent / "owned-output"
+            build.build(output)
+            before = snapshot_tree(output)
+            failure_injected = False
+
+            def replace_with_one_failure(path, target):
+                nonlocal failure_injected
+                if Path(target) == output and not failure_injected:
+                    failure_injected = True
+                    raise OSError("simulated final rename failure")
+                return original_replace(path, target)
+
+            with mock.patch.object(Path, "replace", replace_with_one_failure):
+                with self.assertRaisesRegex(OSError, "simulated final rename failure"):
+                    build.build(output)
+
+            self.assertTrue(failure_injected)
+            self.assertEqual(before, snapshot_tree(output))
+            self.assertEqual({output}, set(parent.iterdir()))
 
     def test_generated_human_pages_and_404_use_the_same_origin_svg_favicon(self):
         favicon_link = '<link rel="icon" href="/favicon.svg" type="image/svg+xml">'
@@ -78,6 +313,15 @@ class SiteBuildTests(unittest.TestCase):
                 p.relative_to(right): p.read_bytes() for p in right.rglob("*") if p.is_file()
             }
             self.assertEqual(left_files, right_files)
+
+    def test_generated_app_javascript_bytes_equal_the_source_asset(self):
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw)
+            self.build(output)
+            self.assertEqual(
+                (ROOT / "site/src/assets/app.js").read_bytes(),
+                (output / "assets/app.js").read_bytes(),
+            )
 
     def test_machine_index_is_valid_json(self):
         with tempfile.TemporaryDirectory() as raw:
@@ -260,6 +504,16 @@ class SiteBuildTests(unittest.TestCase):
         self.assertIn("npm ci --prefix site", workflow)
         self.assertIn("npm run test:client --prefix site", workflow)
 
+    def test_ci_and_readme_use_the_exact_site_inclusive_ruff_scope(self):
+        workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        for command in (
+            "ruff format --check apr_runtime tests examples site",
+            "ruff check apr_runtime tests examples site",
+        ):
+            self.assertIn(command, workflow)
+            self.assertIn(command, readme)
+
     def test_locales_share_route_and_evidence_identifiers(self):
         content = load_content()
         self.assertEqual(set(content.PAGES["en"]), set(content.PAGES["zh-TW"]))
@@ -380,6 +634,22 @@ class SiteBuildTests(unittest.TestCase):
                 self.assertIn(notice, lab)
                 self.assertIn('<script type="module" src="/assets/app.js"></script>', lab)
 
+    def test_lab_embeds_the_selected_content_value_map_as_inert_form_data(self):
+        content = load_content()
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw)
+            self.build(output)
+            for locale, relative in (
+                ("en", Path("lab/index.html")),
+                ("zh-TW", Path("zh-TW/lab/index.html")),
+            ):
+                rendered = (output / relative).read_text(encoding="utf-8")
+                match = re.search(r'data-value-labels="([^"]+)"', rendered)
+                self.assertIsNotNone(match, locale)
+                encoded = html_module.unescape(match.group(1))
+                self.assertEqual(content.LAB_UI[locale]["value_labels"], json.loads(encoded))
+                self.assertNotIn('<script type="application/json"', rendered)
+
     def test_client_has_no_remote_or_local_runtime_endpoint(self):
         script = (ROOT / "site/src/assets/app.js").read_text(encoding="utf-8")
         for forbidden in (
@@ -392,7 +662,7 @@ class SiteBuildTests(unittest.TestCase):
             self.assertNotIn(forbidden, script)
         self.assertIn("/data/demo-scenarios.json", script)
         self.assertIn("export function scenarioKey(state)", script)
-        self.assertIn("export function renderScenario(output, row, labels)", script)
+        self.assertIn("export function renderScenario(output, row, labels, valueLabels)", script)
         self.assertNotIn("innerHTML", script)
 
     def test_public_copy_does_not_claim_open_source_or_production_readiness(self):

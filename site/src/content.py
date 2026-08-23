@@ -41,6 +41,158 @@ EVIDENCE = {
     "source_manifest": "docs/provenance/SOURCE_MANIFEST.md",
 }
 
+LAB_UI = {
+    "en": {
+        "notice": "Educational projection only — no policy execution or service contact.",
+        "loading": "Loading bounded fixture…",
+        "load_error": (
+            "The educational projection is unavailable because its local fixture could not "
+            "be validated."
+        ),
+        "missing_error": "No bounded fixture matches this control state.",
+        "controls": (
+            ("freshness", "Evidence freshness", (("fresh", "Fresh"), ("stale", "Stale"))),
+            ("uncertainty", "Uncertainty", (("low", "Low"), ("high", "High"))),
+            ("risk", "Action risk", (("low", "Low"), ("high", "High"))),
+            (
+                "conflict",
+                "Evidence conflict",
+                (("absent", "Absent"), ("present", "Present")),
+            ),
+            (
+                "budget",
+                "Observation budget",
+                (("available", "Available"), ("exhausted", "Exhausted")),
+            ),
+            (
+                "goal",
+                "Goal evidence",
+                (("unresolved", "Unresolved"), ("satisfied", "Satisfied")),
+            ),
+        ),
+        "fields": {
+            "disposition": "Observation disposition",
+            "reason_key": "Reason",
+            "effective_fact_status": "Effective fact status",
+            "selected_channel": "Selected channel",
+            "budget_before": "Budget before",
+            "projected_budget_after": "Projected budget after",
+            "affordable": "Affordable",
+            "action_readiness": "Action readiness",
+        },
+        "value_labels": {
+            "disposition": {
+                "no_observation": "No observation",
+                "monitor": "Monitor",
+                "skim": "Skim",
+                "search": "Search",
+                "track": "Track",
+                "inspect": "Inspect",
+                "deep": "Deep read",
+                "revisit": "Revisit",
+                "epistemic_action": "Epistemic action",
+            },
+            "reason_key": {
+                "fresh_fact_sufficient": "Fresh fact is sufficient",
+                "contradiction_revisit": "Contradiction requires re-observation",
+                "stale_fact_refresh": "Stale fact requires refresh",
+                "fact_unknown_or_uncertain": "Fact is unknown or uncertain",
+                "risk_reverification": "Risk requires re-verification",
+                "no_direct_modality": "No direct observation channel",
+            },
+            "effective_fact_status": {
+                "known": "Known",
+                "unknown": "Unknown",
+                "uncertain": "Uncertain",
+                "stale": "Stale",
+                "contradicted": "Contradicted",
+            },
+            "selected_channel": {
+                "text": "Text",
+                "vision": "Vision",
+                "video": "Video",
+                "audio": "Audio",
+                "structured": "Structured data",
+                "sensor": "Sensor",
+                "none": "No channel selected",
+            },
+            "affordable": {"true": "Yes", "false": "No"},
+            "action_readiness": {
+                "allow": "Allow",
+                "verify": "Verify first",
+                "block": "Block",
+            },
+        },
+    },
+    "zh-TW": {
+        "notice": "僅供教育投影 — 不執行政策，也不聯絡任何服務。",
+        "loading": "正在載入有界固定案例…",
+        "load_error": "本機固定案例無法通過驗證，因此教育投影目前不可用。",
+        "missing_error": "沒有符合此控制狀態的有界固定案例。",
+        "controls": (
+            ("freshness", "證據新鮮度", (("fresh", "新鮮"), ("stale", "過期"))),
+            ("uncertainty", "不確定性", (("low", "低"), ("high", "高"))),
+            ("risk", "行動風險", (("low", "低"), ("high", "高"))),
+            ("conflict", "證據衝突", (("absent", "無"), ("present", "有"))),
+            ("budget", "觀察預算", (("available", "可用"), ("exhausted", "耗盡"))),
+            ("goal", "目標證據", (("unresolved", "未解決"), ("satisfied", "已滿足"))),
+        ),
+        "fields": {
+            "disposition": "觀察處置",
+            "reason_key": "理由",
+            "effective_fact_status": "有效事實狀態",
+            "selected_channel": "所選通道",
+            "budget_before": "預算前值",
+            "projected_budget_after": "預估預算後值",
+            "affordable": "可負擔性",
+            "action_readiness": "行動就緒狀態",
+        },
+        "value_labels": {
+            "disposition": {
+                "no_observation": "不觀察",
+                "monitor": "監看",
+                "skim": "略讀",
+                "search": "搜尋",
+                "track": "追蹤",
+                "inspect": "檢視",
+                "deep": "深度閱讀",
+                "revisit": "重新觀察",
+                "epistemic_action": "認知行動",
+            },
+            "reason_key": {
+                "fresh_fact_sufficient": "新鮮事實已足夠",
+                "contradiction_revisit": "矛盾需要重新觀察",
+                "stale_fact_refresh": "過期事實需要更新",
+                "fact_unknown_or_uncertain": "事實未知或不確定",
+                "risk_reverification": "風險要求再次驗證",
+                "no_direct_modality": "沒有直接觀察通道",
+            },
+            "effective_fact_status": {
+                "known": "已知",
+                "unknown": "未知",
+                "uncertain": "不確定",
+                "stale": "過期",
+                "contradicted": "相互矛盾",
+            },
+            "selected_channel": {
+                "text": "文字",
+                "vision": "視覺",
+                "video": "影片",
+                "audio": "音訊",
+                "structured": "結構化資料",
+                "sensor": "感測器",
+                "none": "未選擇通道",
+            },
+            "affordable": {"true": "可負擔", "false": "不可負擔"},
+            "action_readiness": {
+                "allow": "允許",
+                "verify": "先驗證",
+                "block": "阻擋",
+            },
+        },
+    },
+}
+
 
 @dataclass(frozen=True)
 class Route:

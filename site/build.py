@@ -5,84 +5,26 @@ import html
 import json
 import shutil
 import sys
+import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SOURCE = ROOT / "site" / "src"
-PUBLIC = ROOT / "site" / "public"
+SITE_ROOT = ROOT / "site"
+SOURCE = SITE_ROOT / "src"
+PUBLIC = SITE_ROOT / "public"
+GIT_MARKER = ROOT / ".git"
+DEFAULT_OUTPUT = SITE_ROOT / "dist"
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(SOURCE))
 
-from content import EVIDENCE, LOCALES, PAGES, ROUTES, SITE, Route  # noqa: E402
+from content import EVIDENCE, LAB_UI, LOCALES, PAGES, ROUTES, SITE, Route  # noqa: E402
 from demo_export import export_scenarios  # noqa: E402
-
-LAB_UI = {
-    "en": {
-        "notice": "Educational projection only — no policy execution or service contact.",
-        "loading": "Loading bounded fixture…",
-        "load_error": "The educational projection is unavailable because its local fixture could not be validated.",
-        "missing_error": "No bounded fixture matches this control state.",
-        "controls": (
-            ("freshness", "Evidence freshness", (("fresh", "Fresh"), ("stale", "Stale"))),
-            ("uncertainty", "Uncertainty", (("low", "Low"), ("high", "High"))),
-            ("risk", "Action risk", (("low", "Low"), ("high", "High"))),
-            (
-                "conflict",
-                "Evidence conflict",
-                (("absent", "Absent"), ("present", "Present")),
-            ),
-            (
-                "budget",
-                "Observation budget",
-                (("available", "Available"), ("exhausted", "Exhausted")),
-            ),
-            (
-                "goal",
-                "Goal evidence",
-                (("unresolved", "Unresolved"), ("satisfied", "Satisfied")),
-            ),
-        ),
-        "fields": {
-            "disposition": "Observation disposition",
-            "reason_key": "Reason",
-            "effective_fact_status": "Effective fact status",
-            "selected_channel": "Selected channel",
-            "budget_before": "Budget before",
-            "projected_budget_after": "Projected budget after",
-            "affordable": "Affordable",
-            "action_readiness": "Action readiness",
-        },
-    },
-    "zh-TW": {
-        "notice": "僅供教育投影 — 不執行政策，也不聯絡任何服務。",
-        "loading": "正在載入有界固定案例…",
-        "load_error": "本機固定案例無法通過驗證，因此教育投影目前不可用。",
-        "missing_error": "沒有符合此控制狀態的有界固定案例。",
-        "controls": (
-            ("freshness", "證據新鮮度", (("fresh", "新鮮"), ("stale", "過期"))),
-            ("uncertainty", "不確定性", (("low", "低"), ("high", "高"))),
-            ("risk", "行動風險", (("low", "低"), ("high", "高"))),
-            ("conflict", "證據衝突", (("absent", "無"), ("present", "有"))),
-            ("budget", "觀察預算", (("available", "可用"), ("exhausted", "耗盡"))),
-            ("goal", "目標證據", (("unresolved", "未解決"), ("satisfied", "已滿足"))),
-        ),
-        "fields": {
-            "disposition": "觀察處置",
-            "reason_key": "理由",
-            "effective_fact_status": "有效事實狀態",
-            "selected_channel": "所選通道",
-            "budget_before": "預算前值",
-            "projected_budget_after": "預估預算後值",
-            "affordable": "可負擔性",
-            "action_readiness": "行動就緒狀態",
-        },
-    },
-}
+from publication_validation import validate_publication  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build the APR public site.")
-    parser.add_argument("--output", type=Path, default=Path("site/dist"))
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     return parser.parse_args()
 
 
@@ -178,6 +120,15 @@ def render_lab(locale: str) -> str:
         f'data-label-{field.replace("_", "-")}="{html.escape(label, quote=True)}"'
         for field, label in ui["fields"].items()
     )
+    value_labels = html.escape(
+        json.dumps(
+            ui["value_labels"],
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ),
+        quote=True,
+    )
     return (
         '    <section class="lab-panel" aria-labelledby="lab-controls-title">\n'
         f'      <h2 id="lab-controls-title">{html.escape(PAGES[locale]["lab"]["sections"][0]["title"])}</h2>\n'
@@ -185,6 +136,7 @@ def render_lab(locale: str) -> str:
         f'      <form class="apr-lab" data-apr-lab data-locale="{locale}" '
         f'data-load-error="{html.escape(ui["load_error"], quote=True)}" '
         f'data-missing-error="{html.escape(ui["missing_error"], quote=True)}" '
+        f'data-value-labels="{value_labels}" '
         f'{data_labels} aria-describedby="lab-educational-notice">\n' + "\n".join(fieldsets) + "\n"
         f'      <output class="lab-output" data-lab-output aria-live="polite" aria-busy="true">{html.escape(ui["loading"])}</output>\n'
         "      </form>\n"
@@ -388,10 +340,151 @@ def copy_public(source: Path, output: Path) -> None:
         shutil.copyfile(source_path, destination)
 
 
-def build(output: Path) -> dict[str, object]:
-    if output.exists():
-        shutil.rmtree(output)
-    output.mkdir(parents=True)
+def _git_metadata_paths() -> tuple[Path, ...]:
+    paths = [GIT_MARKER.resolve(strict=False)]
+    if not GIT_MARKER.is_file():
+        return tuple(paths)
+    try:
+        pointer = GIT_MARKER.read_text(encoding="utf-8").strip()
+    except (OSError, UnicodeError):
+        return tuple(paths)
+    if not pointer.startswith("gitdir:"):
+        return tuple(paths)
+
+    target = Path(pointer.removeprefix("gitdir:").strip())
+    if not target.is_absolute():
+        target = GIT_MARKER.parent / target
+    target = target.resolve(strict=False)
+    paths.append(target)
+    common = next((path for path in (target, *target.parents) if path.name == ".git"), None)
+    if common is not None:
+        paths.append(common)
+    return tuple(dict.fromkeys(paths))
+
+
+def validate_output_path(output: Path) -> Path:
+    try:
+        candidate = Path(output).expanduser().resolve(strict=False)
+    except OSError as exc:
+        raise ValueError(f"cannot safely resolve output path: {output}") from exc
+
+    if candidate == Path(candidate.anchor):
+        raise ValueError(f"filesystem root cannot be a site output: {candidate}")
+
+    protected = tuple(path.resolve(strict=False) for path in (ROOT, SITE_ROOT, SOURCE, PUBLIC))
+    protected += _git_metadata_paths()
+    for protected_path in protected:
+        if candidate == protected_path or candidate in protected_path.parents:
+            raise ValueError(f"output is a protected root or ancestor: {candidate}")
+
+    for protected_path in (
+        SOURCE.resolve(strict=False),
+        PUBLIC.resolve(strict=False),
+        *_git_metadata_paths(),
+    ):
+        if candidate == protected_path or protected_path in candidate.parents:
+            raise ValueError(f"output is inside a protected source path: {candidate}")
+    return candidate
+
+
+def _is_valid_generated_index(index: object) -> bool:
+    if type(index) is not dict or set(index) != {"schema", "site", "pages"}:
+        return False
+    if index.get("schema") != "apr-site-index/v1":
+        return False
+    site = index.get("site")
+    if (
+        type(site) is not dict
+        or site.get("name") != SITE["name"]
+        or site.get("origin") != SITE["origin"]
+        or type(site.get("source_ref")) is not str
+    ):
+        return False
+    pages = index.get("pages")
+    if type(pages) is not list or len(pages) != len(LOCALES) * len(ROUTES):
+        return False
+
+    expected_pairs = {(locale, route.slug) for locale in LOCALES for route in ROUTES}
+    actual_pairs: set[tuple[str, str]] = set()
+    expected_page_fields = {
+        "locale",
+        "slug",
+        "title",
+        "description",
+        "path",
+        "url",
+        "evidence_ids",
+    }
+    for page in pages:
+        if type(page) is not dict or set(page) != expected_page_fields:
+            return False
+        locale = page["locale"]
+        slug = page["slug"]
+        if type(locale) is not str or type(slug) is not str:
+            return False
+        relative_path = page["path"]
+        if type(relative_path) is not str:
+            return False
+        parsed_path = Path(relative_path)
+        if parsed_path.is_absolute() or ".." in parsed_path.parts:
+            return False
+        if any(
+            type(page[field]) is not str or not page[field]
+            for field in ("title", "description", "url")
+        ):
+            return False
+        evidence_ids = page["evidence_ids"]
+        if type(evidence_ids) is not list or any(type(item) is not str for item in evidence_ids):
+            return False
+        actual_pairs.add((locale, slug))
+    return actual_pairs == expected_pairs
+
+
+def _existing_output_is_approved(output: Path) -> bool:
+    if not output.exists():
+        return False
+    if not output.is_dir():
+        raise ValueError(f"site output must be a directory: {output}")
+    if next(output.iterdir(), None) is None:
+        return True
+
+    index_path = output / "ai" / "site.json"
+    try:
+        index = json.loads(index_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"refusing to replace non-empty unowned output: {output}") from exc
+    if not _is_valid_generated_index(index):
+        raise ValueError(f"refusing to replace non-empty unowned output: {output}")
+    return True
+
+
+def _created_sibling(output: Path, kind: str, token: str) -> Path:
+    return output.parent / f".{output.name}.apr-{kind}-{token}"
+
+
+def _remove_created_tree(path: Path, *, output: Path, kind: str, token: str) -> None:
+    expected = _created_sibling(output, kind, token)
+    if path != expected or path.parent != output.parent:
+        raise RuntimeError(f"refusing to delete an unvalidated build path: {path}")
+    if not path.exists():
+        return
+    if not path.is_dir() or path.is_symlink():
+        raise RuntimeError(f"refusing to recursively delete a non-directory build path: {path}")
+    shutil.rmtree(path)
+
+
+def _generate_tree(output: Path) -> dict[str, object]:
+    output.mkdir(parents=True, exist_ok=False)
+
+    scenarios = export_scenarios()
+    validate_publication(
+        scenarios=scenarios,
+        locales=LOCALES,
+        routes=ROUTES,
+        pages=PAGES,
+        evidence=EVIDENCE,
+        lab_ui=LAB_UI,
+    )
 
     pages: list[dict[str, object]] = []
     for locale in LOCALES:
@@ -425,7 +518,7 @@ def build(output: Path) -> dict[str, object]:
         "schema": "apr-demo-scenarios/v1",
         "runtime_version": "0.10.0",
         "controls": ["freshness", "uncertainty", "risk", "conflict", "budget", "goal"],
-        "scenarios": export_scenarios(),
+        "scenarios": scenarios,
     }
     write_text(
         output / "data" / "demo-scenarios.json",
@@ -446,6 +539,111 @@ def build(output: Path) -> dict[str, object]:
     write_text(output / "404.html", render_404())
     copy_public(PUBLIC, output)
     return index
+
+
+def _validate_generated_tree(output: Path, expected_index: dict[str, object]) -> None:
+    try:
+        index = json.loads((output / "ai/site.json").read_text(encoding="utf-8"))
+        payload = json.loads((output / "data/demo-scenarios.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError("generated site is missing valid machine-readable data") from exc
+
+    if index != expected_index or not _is_valid_generated_index(index):
+        raise ValueError("generated site index failed publication validation")
+    if type(payload) is not dict or set(payload) != {
+        "schema",
+        "runtime_version",
+        "controls",
+        "scenarios",
+    }:
+        raise ValueError("generated scenario payload has an unapproved top-level shape")
+    if payload["schema"] != "apr-demo-scenarios/v1" or payload["runtime_version"] != "0.10.0":
+        raise ValueError("generated scenario payload has an unapproved schema or version")
+    if payload["controls"] != [
+        "freshness",
+        "uncertainty",
+        "risk",
+        "conflict",
+        "budget",
+        "goal",
+    ]:
+        raise ValueError("generated scenario controls drifted from the public order")
+    validate_publication(
+        scenarios=payload["scenarios"],
+        locales=LOCALES,
+        routes=ROUTES,
+        pages=PAGES,
+        evidence=EVIDENCE,
+        lab_ui=LAB_UI,
+    )
+
+    required_files = {
+        route_path(output, locale, route.slug) for locale in LOCALES for route in ROUTES
+    }
+    required_files.update(
+        {
+            output / "ai/site.json",
+            output / "data/demo-scenarios.json",
+            output / "llms.txt",
+            output / "sitemap.xml",
+            output / "robots.txt",
+            output / "404.html",
+        }
+    )
+    source_assets = [path for path in SOURCE.joinpath("assets").iterdir() if path.is_file()]
+    required_files.update(output / "assets" / path.name for path in source_assets)
+    public_files = [path for path in PUBLIC.rglob("*") if path.is_file()]
+    required_files.update(output / path.relative_to(PUBLIC) for path in public_files)
+    missing = sorted(
+        path.relative_to(output).as_posix() for path in required_files if not path.is_file()
+    )
+    if missing:
+        raise ValueError(f"generated site is incomplete: {', '.join(missing)}")
+    for source_path in source_assets:
+        if source_path.read_bytes() != (output / "assets" / source_path.name).read_bytes():
+            raise ValueError(f"generated asset differs from source: {source_path.name}")
+    for source_path in public_files:
+        destination = output / source_path.relative_to(PUBLIC)
+        if source_path.read_bytes() != destination.read_bytes():
+            raise ValueError(f"generated public asset differs from source: {source_path.name}")
+
+
+def build(output: Path) -> dict[str, object]:
+    output = validate_output_path(output)
+    had_existing_output = _existing_output_is_approved(output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    token = uuid.uuid4().hex
+    temporary = _created_sibling(output, "build", token)
+    backup = _created_sibling(output, "backup", token)
+    if temporary.exists() or backup.exists():
+        raise FileExistsError("unique site build sibling already exists")
+
+    backup_created = False
+    try:
+        index = _generate_tree(temporary)
+        _validate_generated_tree(temporary, index)
+
+        if had_existing_output:
+            output.replace(backup)
+            backup_created = True
+        try:
+            temporary.replace(output)
+        except BaseException:
+            if backup_created:
+                backup.replace(output)
+                backup_created = False
+            raise
+
+        if backup_created:
+            _remove_created_tree(backup, output=output, kind="backup", token=token)
+            backup_created = False
+        return index
+    finally:
+        if temporary.exists():
+            _remove_created_tree(temporary, output=output, kind="build", token=token)
+        if backup_created and backup.exists() and not output.exists():
+            backup.replace(output)
 
 
 if __name__ == "__main__":
