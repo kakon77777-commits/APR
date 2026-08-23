@@ -53,6 +53,19 @@ class SiteBuildTests(unittest.TestCase):
                 self.assertTrue(english.is_file(), english)
                 self.assertTrue(chinese.is_file(), chinese)
 
+    def test_generated_human_pages_and_404_use_the_same_origin_svg_favicon(self):
+        favicon_link = '<link rel="icon" href="/favicon.svg" type="image/svg+xml">'
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw)
+            self.build(output)
+            pages = [output / "404.html"]
+            for locale in ("", "zh-TW"):
+                for route in ("", "runtime", "lab", "papers", "mcp", "status"):
+                    pages.append(output / locale / route / "index.html")
+            for page in pages:
+                self.assertIn(favicon_link, page.read_text(encoding="utf-8"), page)
+            self.assertTrue((output / "favicon.svg").is_file(), "favicon.svg")
+
     def test_build_is_byte_deterministic(self):
         with tempfile.TemporaryDirectory() as left_raw, tempfile.TemporaryDirectory() as right_raw:
             left, right = Path(left_raw), Path(right_raw)

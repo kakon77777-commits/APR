@@ -254,6 +254,7 @@ def render_page(route: Route, locale: str) -> str:
         f'  <meta property="og:title" content="{title} | {SITE["name"]}">\n'
         f'  <meta property="og:description" content="{description}">\n'
         f'  <meta property="og:url" content="{canonical}">\n'
+        '  <link rel="icon" href="/favicon.svg" type="image/svg+xml">\n'
         '  <link rel="stylesheet" href="/assets/styles.css">\n'
         "</head>\n"
         "<body>\n"
@@ -351,6 +352,7 @@ def render_404() -> str:
         '  <meta name="viewport" content="width=device-width, initial-scale=1">\n'
         '  <meta name="robots" content="noindex">\n'
         "  <title>Page not found · 找不到頁面 | APR</title>\n"
+        '  <link rel="icon" href="/favicon.svg" type="image/svg+xml">\n'
         '  <link rel="stylesheet" href="/assets/styles.css">\n'
         "</head>\n"
         "<body>\n"
