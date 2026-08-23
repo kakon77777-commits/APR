@@ -11,6 +11,6 @@
     "deploy": "npm run validate && wrangler deploy"
   },
   "devDependencies": {
-    "wrangler": "4.92.0"
+    "wrangler": "4.125.0"
   }
 }

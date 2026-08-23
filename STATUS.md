@@ -11,7 +11,7 @@ The original cumulative v0.10 snapshot has been integrated into a standalone rep
 - 148/148 offline Python unit and integration-style tests;
 - 6/6 dependency-free Node client-behavior tests;
 - deterministic bilingual static-site output, machine discovery, restrictive static headers,
-  and an entrypoint-free Wrangler 4.92.0 assets-only dry run with no bindings;
+  and an entrypoint-free Wrangler 4.125.0 assets-only dry run with no bindings;
 - package import and explicit public export surface;
 - transactional plugin registration and entry-point failure reporting;
 - finite/range validation for core confidence, risk, TTL, cost, and budget values;

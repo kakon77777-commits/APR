@@ -212,7 +212,7 @@ class SiteBuildTests(unittest.TestCase):
         self.assertTrue(package["private"])
         self.assertEqual("0.10.0", package["version"])
         self.assertEqual("module", package.get("type"))
-        self.assertEqual({"wrangler": "4.92.0"}, package["devDependencies"])
+        self.assertEqual({"wrangler": "4.125.0"}, package["devDependencies"])
         self.assertEqual("python build.py --output dist", package["scripts"]["build"])
         self.assertEqual(
             "cd .. && node --test tests/site_app.test.mjs",
