@@ -23,3 +23,6 @@ service-account*.json
 artifacts/
 recovery-trace*.json
 recovery-trace*.md
+site/dist/
+site/node_modules/
+site/.wrangler/
