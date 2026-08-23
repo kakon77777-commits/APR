@@ -167,15 +167,16 @@ class SiteBuildTests(unittest.TestCase):
             self.assertNotIn("stdio", mcp_copy)
             self.assertNotIn("loopback", mcp_copy)
 
-    def test_locales_describe_lab_scenarios_as_a_deferred_task(self):
+    def test_locales_describe_exported_lab_matrix_as_current_and_ui_as_deferred(self):
         content = load_content()
-        for locale, deferred_lab in (
-            ("en", "will be added in a later task"),
-            ("zh-TW", "將在後續任務加入"),
+        for locale, current_matrix, deferred_ui in (
+            ("en", "The exported scenario matrix reports", "local interface will be added"),
+            ("zh-TW", "匯出的情境矩陣列出", "本機介面將在"),
         ):
             lab = content.PAGES[locale]["lab"]
             lab_copy = " ".join([lab["summary"], *(section["body"] for section in lab["sections"])])
-            self.assertIn(deferred_lab, lab_copy)
+            self.assertIn(current_matrix, lab_copy)
+            self.assertIn(deferred_ui, lab_copy)
 
     def test_each_locale_has_truthful_mcp_and_release_candidate_messages(self):
         with tempfile.TemporaryDirectory() as raw:

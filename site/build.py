@@ -7,10 +7,13 @@ import shutil
 import sys
 from pathlib import Path
 
-SOURCE = Path(__file__).resolve().parent / "src"
+ROOT = Path(__file__).resolve().parent.parent
+SOURCE = ROOT / "site" / "src"
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(SOURCE))
 
 from content import EVIDENCE, LOCALES, PAGES, ROUTES, SITE, Route  # noqa: E402
+from demo_export import export_scenarios  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -208,6 +211,22 @@ def build(output: Path) -> dict[str, object]:
     index: dict[str, object] = {"schema": "apr-site-index/v1", "site": SITE, "pages": pages}
     write_text(
         output / "ai" / "site.json", json.dumps(index, ensure_ascii=False, sort_keys=True) + "\n"
+    )
+    demo_payload = {
+        "schema": "apr-demo-scenarios/v1",
+        "runtime_version": "0.10.0",
+        "controls": ["freshness", "uncertainty", "risk", "conflict", "budget", "goal"],
+        "scenarios": export_scenarios(),
+    }
+    write_text(
+        output / "data" / "demo-scenarios.json",
+        json.dumps(
+            demo_payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        + "\n",
     )
     return index
 
