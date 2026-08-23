@@ -145,6 +145,57 @@ class SiteBuildTests(unittest.TestCase):
             self.assertIn('<a class="brand" href="/zh-TW/" aria-label="APR 首頁">', chinese)
             self.assertIn("感知 · 驗證 · 復原", chinese)
 
+    def test_lab_has_six_labelled_controls_and_live_educational_projection(self):
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw)
+            self.build(output)
+            for prefix, locale, legends, notice in (
+                (
+                    Path(),
+                    "en",
+                    (
+                        "Evidence freshness",
+                        "Uncertainty",
+                        "Action risk",
+                        "Evidence conflict",
+                        "Observation budget",
+                        "Goal evidence",
+                    ),
+                    "Educational projection only",
+                ),
+                (
+                    Path("zh-TW"),
+                    "zh-TW",
+                    ("證據新鮮度", "不確定性", "行動風險", "證據衝突", "觀察預算", "目標證據"),
+                    "僅供教育投影",
+                ),
+            ):
+                lab = (output / prefix / "lab/index.html").read_text(encoding="utf-8")
+                self.assertIn(f'<form class="apr-lab" data-apr-lab data-locale="{locale}"', lab)
+                self.assertEqual(6, lab.count("<fieldset data-control="))
+                self.assertEqual(12, lab.count('<label class="lab-choice">'))
+                for legend in legends:
+                    self.assertIn(f"<legend>{legend}</legend>", lab)
+                self.assertEqual(1, lab.count('data-lab-output aria-live="polite"'))
+                self.assertIn("data-lab-notice", lab)
+                self.assertIn(notice, lab)
+                self.assertIn('<script type="module" src="/assets/app.js"></script>', lab)
+
+    def test_client_has_no_remote_or_local_runtime_endpoint(self):
+        script = (ROOT / "site/src/assets/app.js").read_text(encoding="utf-8")
+        for forbidden in (
+            "localhost",
+            "127.0.0.1",
+            "api.openai.com",
+            "anthropic.com",
+            "aiplatform.googleapis.com",
+        ):
+            self.assertNotIn(forbidden, script)
+        self.assertIn("/data/demo-scenarios.json", script)
+        self.assertIn("export function scenarioKey(state)", script)
+        self.assertIn("export function renderScenario(output, row, labels)", script)
+        self.assertNotIn("innerHTML", script)
+
     def test_public_copy_does_not_claim_open_source_or_production_readiness(self):
         with tempfile.TemporaryDirectory() as raw:
             output = Path(raw)
@@ -167,16 +218,30 @@ class SiteBuildTests(unittest.TestCase):
             self.assertNotIn("stdio", mcp_copy)
             self.assertNotIn("loopback", mcp_copy)
 
-    def test_locales_describe_exported_lab_matrix_as_current_and_ui_as_deferred(self):
+    def test_locales_describe_exported_lab_matrix_and_interface_as_current(self):
         content = load_content()
-        for locale, current_matrix, deferred_ui in (
-            ("en", "The exported scenario matrix reports", "local interface will be added"),
-            ("zh-TW", "匯出的情境矩陣列出", "本機介面將在"),
+        for locale, current_matrix, current_controls, current_interface, deferred_ui in (
+            (
+                "en",
+                "The exported scenario matrix reports",
+                "local lookup controls are available below",
+                "local interface renders those fields below",
+                "will be added",
+            ),
+            (
+                "zh-TW",
+                "匯出的情境矩陣列出",
+                "本機查表控制項已在下方提供",
+                "本機介面在下方呈現這些欄位",
+                "將在",
+            ),
         ):
             lab = content.PAGES[locale]["lab"]
             lab_copy = " ".join([lab["summary"], *(section["body"] for section in lab["sections"])])
             self.assertIn(current_matrix, lab_copy)
-            self.assertIn(deferred_ui, lab_copy)
+            self.assertIn(current_controls, lab_copy)
+            self.assertIn(current_interface, lab_copy)
+            self.assertNotIn(deferred_ui, lab_copy)
 
     def test_each_locale_has_truthful_mcp_and_release_candidate_messages(self):
         with tempfile.TemporaryDirectory() as raw:
@@ -215,3 +280,6 @@ class SiteBuildTests(unittest.TestCase):
             self.assertIn("@media (prefers-reduced-motion: reduce)", css)
             self.assertIn("min-height: 40px", css)
             self.assertIn("@media (max-width:", css)
+            self.assertIn(".lab-choice {", css)
+            self.assertIn(".lab-output dl {", css)
+            self.assertIn(".lab-output dd {", css)

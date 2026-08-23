@@ -15,6 +15,69 @@ sys.path.insert(0, str(SOURCE))
 from content import EVIDENCE, LOCALES, PAGES, ROUTES, SITE, Route  # noqa: E402
 from demo_export import export_scenarios  # noqa: E402
 
+LAB_UI = {
+    "en": {
+        "notice": "Educational projection only — no policy execution or service contact.",
+        "loading": "Loading bounded fixture…",
+        "load_error": "The educational projection is unavailable because its local fixture could not be validated.",
+        "missing_error": "No bounded fixture matches this control state.",
+        "controls": (
+            ("freshness", "Evidence freshness", (("fresh", "Fresh"), ("stale", "Stale"))),
+            ("uncertainty", "Uncertainty", (("low", "Low"), ("high", "High"))),
+            ("risk", "Action risk", (("low", "Low"), ("high", "High"))),
+            (
+                "conflict",
+                "Evidence conflict",
+                (("absent", "Absent"), ("present", "Present")),
+            ),
+            (
+                "budget",
+                "Observation budget",
+                (("available", "Available"), ("exhausted", "Exhausted")),
+            ),
+            (
+                "goal",
+                "Goal evidence",
+                (("unresolved", "Unresolved"), ("satisfied", "Satisfied")),
+            ),
+        ),
+        "fields": {
+            "disposition": "Observation disposition",
+            "reason_key": "Reason",
+            "effective_fact_status": "Effective fact status",
+            "selected_channel": "Selected channel",
+            "budget_before": "Budget before",
+            "projected_budget_after": "Projected budget after",
+            "affordable": "Affordable",
+            "action_readiness": "Action readiness",
+        },
+    },
+    "zh-TW": {
+        "notice": "僅供教育投影 — 不執行政策，也不聯絡任何服務。",
+        "loading": "正在載入有界固定案例…",
+        "load_error": "本機固定案例無法通過驗證，因此教育投影目前不可用。",
+        "missing_error": "沒有符合此控制狀態的有界固定案例。",
+        "controls": (
+            ("freshness", "證據新鮮度", (("fresh", "新鮮"), ("stale", "過期"))),
+            ("uncertainty", "不確定性", (("low", "低"), ("high", "高"))),
+            ("risk", "行動風險", (("low", "低"), ("high", "高"))),
+            ("conflict", "證據衝突", (("absent", "無"), ("present", "有"))),
+            ("budget", "觀察預算", (("available", "可用"), ("exhausted", "耗盡"))),
+            ("goal", "目標證據", (("unresolved", "未解決"), ("satisfied", "已滿足"))),
+        ),
+        "fields": {
+            "disposition": "觀察處置",
+            "reason_key": "理由",
+            "effective_fact_status": "有效事實狀態",
+            "selected_channel": "所選通道",
+            "budget_before": "預算前值",
+            "projected_budget_after": "預估預算後值",
+            "affordable": "可負擔性",
+            "action_readiness": "行動就緒狀態",
+        },
+    },
+}
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build the APR public site.")
@@ -88,6 +151,46 @@ def render_evidence(page: dict[str, object], locale: str) -> str:
     )
 
 
+def render_lab(locale: str) -> str:
+    ui = LAB_UI[locale]
+    fieldsets = []
+    for name, legend, options in ui["controls"]:
+        labels = []
+        for index, (value, label) in enumerate(options):
+            checked = " checked" if index == 0 else ""
+            labels.append(
+                '        <label class="lab-choice">'
+                f'<input type="radio" name="{name}" value="{value}"{checked}>'
+                f"<span>{label}</span></label>"
+            )
+        fieldsets.append(
+            f'      <fieldset data-control="{name}">\n'
+            f"        <legend>{legend}</legend>\n"
+            '        <div class="lab-options">\n'
+            + "\n".join(labels)
+            + "\n        </div>\n"
+            "      </fieldset>"
+        )
+    data_labels = " ".join(
+        f'data-label-{field.replace("_", "-")}="{html.escape(label, quote=True)}"'
+        for field, label in ui["fields"].items()
+    )
+    return (
+        '    <section class="lab-panel" aria-labelledby="lab-controls-title">\n'
+        f'      <h2 id="lab-controls-title">{html.escape(PAGES[locale]["lab"]["sections"][0]["title"])}</h2>\n'
+        f'      <p id="lab-educational-notice" class="lab-notice" data-lab-notice>{html.escape(ui["notice"])}</p>\n'
+        f'      <form class="apr-lab" data-apr-lab data-locale="{locale}" '
+        f'data-load-error="{html.escape(ui["load_error"], quote=True)}" '
+        f'data-missing-error="{html.escape(ui["missing_error"], quote=True)}" '
+        f'{data_labels} aria-describedby="lab-educational-notice">\n'
+        + "\n".join(fieldsets)
+        + "\n"
+        f'      <output class="lab-output" data-lab-output aria-live="polite" aria-busy="true">{html.escape(ui["loading"])}</output>\n'
+        "      </form>\n"
+        "    </section>"
+    )
+
+
 def render_page(route: Route, locale: str) -> str:
     title = html.escape(route.title[locale])
     description = html.escape(route.description[locale])
@@ -130,6 +233,7 @@ def render_page(route: Route, locale: str) -> str:
             f"{html.escape(item.title[locale])}</a></li>"
         )
     commit_url = f"https://github.com/kakon77777-commits/APR/commit/{SITE['source_ref']}"
+    lab = render_lab(locale) if route.slug == "lab" else ""
     sections = render_sections(page)
     evidence = render_evidence(page, locale)
     return (
@@ -172,13 +276,14 @@ def render_page(route: Route, locale: str) -> str:
         f'        <a class="control control--quiet" href="https://github.com/kakon77777-commits/APR">{ui["github"]}</a>\n'
         "      </div>\n"
         "    </section>\n"
+        f"{lab}\n"
         f"{sections}\n"
         f"{evidence}\n"
         "  </main>\n"
         '  <footer class="site-footer">\n'
         f'    <p>{ui["source"]}: <a href="{commit_url}"><code>{SITE["source_ref"]}</code></a></p>\n'
         "  </footer>\n"
-        '  <script src="/assets/app.js"></script>\n'
+        '  <script type="module" src="/assets/app.js"></script>\n'
         "</body>\n"
         "</html>\n"
     )

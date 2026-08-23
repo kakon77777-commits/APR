@@ -205,7 +205,7 @@ PAGES = {
         "lab": _page(
             "Offline decision lab",
             "Inspect a bounded educational projection.",
-            "The finite scenario matrix is generated from deterministic APR fixtures; local lookup controls will be added in a later task. This page remains a static educational projection; it does not execute policy or contact a service.",
+            "The finite scenario matrix is generated from deterministic APR fixtures; local lookup controls are available below. This page remains a static educational projection; it does not execute policy or contact a service.",
             "Lab notice",
             "budget",
             "Educational projection — bounded, deterministic, offline",
@@ -225,7 +225,7 @@ PAGES = {
                 },
                 {
                     "title": "Projected output",
-                    "body": "The exported scenario matrix reports disposition, reason, effective fact status, unmet evidence needs, selected channel, budget before and projected after, affordability, and action-gate state; the local interface will be added in the next implementation task.",
+                    "body": "The exported scenario matrix reports disposition, reason, effective fact status, unmet evidence needs, selected channel, budget before and projected after, affordability, and action-gate state; the local interface renders those fields below.",
                 },
                 {
                     "title": "Interpretation boundary",
@@ -393,7 +393,7 @@ PAGES = {
         "lab": _page(
             "離線決策實驗室",
             "檢視有界的教育投影。",
-            "有限情境矩陣已由確定性的 APR 固定案例產生；本機查表控制項將在後續任務加入。此頁目前仍是靜態教育投影；它不執行政策，也不聯絡任何服務。",
+            "有限情境矩陣已由確定性的 APR 固定案例產生；本機查表控制項已在下方提供。此頁目前仍是靜態教育投影；它不執行政策，也不聯絡任何服務。",
             "實驗室聲明",
             "budget",
             "教育投影 — 有界、確定性、離線",
@@ -413,7 +413,7 @@ PAGES = {
                 },
                 {
                     "title": "投影輸出",
-                    "body": "匯出的情境矩陣列出處置、理由、有效事實狀態、未滿足的證據需求、所選通道、預算前值與預估後值、可負擔性，以及行動閘門狀態；本機介面將在下一個實作任務加入。",
+                    "body": "匯出的情境矩陣列出處置、理由、有效事實狀態、未滿足的證據需求、所選通道、預算前值與預估後值、可負擔性，以及行動閘門狀態；本機介面在下方呈現這些欄位。",
                 },
                 {
                     "title": "詮釋邊界",
