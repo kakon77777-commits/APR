@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import subprocess
 import sys
@@ -8,6 +9,17 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+CONTENT_PATH = ROOT / "site/src/content.py"
+
+
+def load_content():
+    spec = importlib.util.spec_from_file_location("apr_site_content", CONTENT_PATH)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Cannot load site content from {CONTENT_PATH}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
 
 
 class SiteBuildTests(unittest.TestCase):
@@ -48,3 +60,122 @@ class SiteBuildTests(unittest.TestCase):
             self.build(output)
             data = json.loads((output / "ai/site.json").read_text(encoding="utf-8"))
             self.assertEqual("apr-site-index/v1", data["schema"])
+
+    def test_locales_share_route_and_evidence_identifiers(self):
+        content = load_content()
+        self.assertEqual(set(content.PAGES["en"]), set(content.PAGES["zh-TW"]))
+        self.assertEqual({route.slug for route in content.ROUTES}, set(content.PAGES["en"]))
+        for slug in content.PAGES["en"]:
+            self.assertEqual(
+                content.PAGES["en"][slug]["evidence_ids"],
+                content.PAGES["zh-TW"][slug]["evidence_ids"],
+            )
+
+        expected_papers = {
+            "apr_01",
+            "apr_02",
+            "apr_03",
+            "apr_04",
+            "apr_05",
+            "apr_06",
+            "apr_07",
+            "whitepaper",
+            "acr_specification",
+            "acr_engineering",
+            "acr_moderate_cognition",
+        }
+        self.assertEqual(expected_papers, set(content.PAGES["en"]["papers"]["evidence_ids"]))
+
+    def test_pages_render_immutable_evidence_links(self):
+        content = load_content()
+        prefix = f"https://github.com/kakon77777-commits/APR/blob/{content.SITE['source_ref']}/"
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw)
+            self.build(output)
+            for slug, page in content.PAGES["en"].items():
+                rendered_path = output / slug / "index.html" if slug else output / "index.html"
+                rendered = rendered_path.read_text(encoding="utf-8")
+                for evidence_id in page["evidence_ids"]:
+                    self.assertIn(prefix + content.EVIDENCE[evidence_id], rendered)
+                    self.assertIn(content.EVIDENCE[evidence_id], rendered)
+
+    def test_evidence_paths_exist_at_candidate_source_ref(self):
+        content = load_content()
+        for evidence_id, path in content.EVIDENCE.items():
+            result = subprocess.run(
+                ["git", "cat-file", "-e", f"{content.SITE['source_ref']}:{path}"],
+                cwd=ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(0, result.returncode, f"{evidence_id}: {path}")
+
+    def test_pages_have_canonical_language_open_graph_and_skip_navigation(self):
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw)
+            self.build(output)
+            english = (output / "runtime/index.html").read_text(encoding="utf-8")
+            chinese = (output / "zh-TW/runtime/index.html").read_text(encoding="utf-8")
+
+            self.assertIn('<html lang="en">', english)
+            self.assertIn('<html lang="zh-Hant">', chinese)
+            self.assertIn(
+                '<link rel="canonical" href="https://apr.evemisslab.com/runtime/">',
+                english,
+            )
+            self.assertIn('hreflang="zh-Hant"', english)
+            self.assertIn('hreflang="en"', chinese)
+            self.assertIn('<meta property="og:type" content="website">', english)
+            self.assertIn(
+                '<meta property="og:url" content="https://apr.evemisslab.com/runtime/">',
+                english,
+            )
+            self.assertIn('class="skip-link"', english)
+            self.assertIn('id="main"', english)
+            self.assertIn('aria-label="Primary navigation"', english)
+            self.assertIn('aria-current="page"', english)
+
+    def test_chinese_brand_navigation_stays_in_locale(self):
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw)
+            self.build(output)
+            chinese = (output / "zh-TW/index.html").read_text(encoding="utf-8")
+
+            self.assertIn('<a class="brand" href="/zh-TW/" aria-label="APR 首頁">', chinese)
+            self.assertIn("感知 · 驗證 · 復原", chinese)
+
+    def test_public_copy_does_not_claim_open_source_or_production_readiness(self):
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw)
+            self.build(output)
+            joined = "\n".join(path.read_text(encoding="utf-8") for path in output.rglob("*.html"))
+            self.assertNotIn("production-ready", joined.lower())
+            self.assertNotIn("open-source licence", joined.lower())
+            self.assertIn("release candidate", joined.lower())
+            self.assertIn("not_implemented", joined)
+
+    def test_built_css_contains_accessible_apr_visual_system(self):
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw)
+            self.build(output)
+            css = (output / "assets/styles.css").read_text(encoding="utf-8")
+
+            for token in (
+                "--canvas: #07090d;",
+                "--surface: #10151d;",
+                "--ink: #f2f6fb;",
+                "--muted: #a7b0bd;",
+                "--line: #27313d;",
+                "--observe: #4cd8e8;",
+                "--budget: #f5c451;",
+                "--uncertain: #a78bfa;",
+                "--verified: #59d88e;",
+                "--danger: #ff6b8a;",
+                "--shell: 72rem;",
+            ):
+                self.assertIn(token, css)
+            self.assertIn(":focus-visible", css)
+            self.assertIn("@media (prefers-reduced-motion: reduce)", css)
+            self.assertIn("min-height: 40px", css)
+            self.assertIn("@media (max-width:", css)
