@@ -220,11 +220,14 @@ class SiteBuildTests(unittest.TestCase):
 
     def test_locales_describe_exported_lab_matrix_and_interface_as_current(self):
         content = load_content()
-        for locale, current_matrix, current_controls, current_interface, deferred_ui in (
+        for locale, current_matrix, current_controls, current_interface, inaccurate_ui, deferred_ui in (
             (
                 "en",
                 "The exported scenario matrix reports",
                 "local lookup controls are available below",
+                "the local interface renders disposition, reason, effective fact status, "
+                "selected channel, budget before and projected after, affordability, and "
+                "action-gate state below",
                 "local interface renders those fields below",
                 "will be added",
             ),
@@ -232,6 +235,8 @@ class SiteBuildTests(unittest.TestCase):
                 "zh-TW",
                 "匯出的情境矩陣列出",
                 "本機查表控制項已在下方提供",
+                "本機介面在下方呈現處置、理由、有效事實狀態、所選通道、預算前值與預估後值、"
+                "可負擔性，以及行動閘門狀態",
                 "本機介面在下方呈現這些欄位",
                 "將在",
             ),
@@ -241,6 +246,7 @@ class SiteBuildTests(unittest.TestCase):
             self.assertIn(current_matrix, lab_copy)
             self.assertIn(current_controls, lab_copy)
             self.assertIn(current_interface, lab_copy)
+            self.assertNotIn(inaccurate_ui, lab_copy)
             self.assertNotIn(deferred_ui, lab_copy)
 
     def test_each_locale_has_truthful_mcp_and_release_candidate_messages(self):

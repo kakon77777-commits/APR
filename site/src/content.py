@@ -225,7 +225,7 @@ PAGES = {
                 },
                 {
                     "title": "Projected output",
-                    "body": "The exported scenario matrix reports disposition, reason, effective fact status, unmet evidence needs, selected channel, budget before and projected after, affordability, and action-gate state; the local interface renders those fields below.",
+                    "body": "The exported scenario matrix reports disposition, reason, effective fact status, unmet evidence needs, selected channel, budget before and projected after, affordability, and action-gate state; the local interface renders disposition, reason, effective fact status, selected channel, budget before and projected after, affordability, and action-gate state below.",
                 },
                 {
                     "title": "Interpretation boundary",
@@ -413,7 +413,7 @@ PAGES = {
                 },
                 {
                     "title": "投影輸出",
-                    "body": "匯出的情境矩陣列出處置、理由、有效事實狀態、未滿足的證據需求、所選通道、預算前值與預估後值、可負擔性，以及行動閘門狀態；本機介面在下方呈現這些欄位。",
+                    "body": "匯出的情境矩陣列出處置、理由、有效事實狀態、未滿足的證據需求、所選通道、預算前值與預估後值、可負擔性，以及行動閘門狀態；本機介面在下方呈現處置、理由、有效事實狀態、所選通道、預算前值與預估後值、可負擔性，以及行動閘門狀態。",
                 },
                 {
                     "title": "詮釋邊界",

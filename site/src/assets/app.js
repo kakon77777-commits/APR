@@ -25,18 +25,17 @@ const ROW_FIELDS = [
   "blocking_facts",
 ];
 
-document.documentElement.dataset.site = "apr";
-
 export function scenarioKey(state) {
   return CONTROL_ORDER.map((name) => state[name]).join(":");
 }
 
 export function renderScenario(output, row, labels) {
-  const list = document.createElement("dl");
+  const documentRef = output.ownerDocument ?? globalThis.document;
+  const list = documentRef.createElement("dl");
   for (const field of OUTPUT_FIELDS) {
-    const term = document.createElement("dt");
+    const term = documentRef.createElement("dt");
     term.textContent = labels[field];
-    const detail = document.createElement("dd");
+    const detail = documentRef.createElement("dd");
     detail.textContent = String(row[field]);
     list.append(term, detail);
   }
@@ -72,8 +71,8 @@ function validatePayload(payload) {
   return payload.scenarios;
 }
 
-function readState(form) {
-  const formData = new FormData(form);
+function readState(form, FormDataClass) {
+  const formData = new FormDataClass(form);
   return Object.fromEntries(CONTROL_ORDER.map((name) => [name, formData.get(name)]));
 }
 
@@ -90,14 +89,15 @@ function outputLabels(form) {
 }
 
 function showError(output, message) {
-  const error = document.createElement("p");
+  const documentRef = output.ownerDocument ?? globalThis.document;
+  const error = documentRef.createElement("p");
   error.className = "lab-error";
   error.textContent = message;
   output.replaceChildren(error);
 }
 
-function renderCurrent(form, output, scenarios, labels) {
-  const row = scenarios[scenarioKey(readState(form))];
+function renderCurrent(form, output, scenarios, labels, FormDataClass) {
+  const row = scenarios[scenarioKey(readState(form, FormDataClass))];
   if (!row) {
     showError(output, form.dataset.missingError);
     return;
@@ -105,17 +105,21 @@ function renderCurrent(form, output, scenarios, labels) {
   renderScenario(output, row, labels);
 }
 
-async function initLab() {
-  const form = document.querySelector("[data-apr-lab]");
+export async function initLab({
+  document: documentRef = globalThis.document,
+  fetch: fetchFixture = globalThis.fetch,
+  FormData: FormDataClass = globalThis.FormData,
+} = {}) {
+  const form = documentRef?.querySelector("[data-apr-lab]");
   if (!form) return;
 
   const output = form.querySelector("[data-lab-output]");
   try {
-    const response = await fetch("/data/demo-scenarios.json");
+    const response = await fetchFixture("/data/demo-scenarios.json");
     if (!response.ok) throw new Error("APR demo scenario fixture unavailable");
     const scenarios = validatePayload(await response.json());
     const labels = outputLabels(form);
-    const update = () => renderCurrent(form, output, scenarios, labels);
+    const update = () => renderCurrent(form, output, scenarios, labels, FormDataClass);
     form.addEventListener("change", update);
     update();
   } catch {
@@ -125,4 +129,7 @@ async function initLab() {
   }
 }
 
-initLab();
+if (typeof document !== "undefined") {
+  document.documentElement.dataset.site = "apr";
+  void initLab();
+}
