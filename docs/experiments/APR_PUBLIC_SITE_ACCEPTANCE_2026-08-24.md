@@ -56,6 +56,15 @@ Repository-wide Ruff over Markdown code fences is not the release gate and is no
 - Parent-index PR #1 merged as `f3c34a78322ed061ed4834ca7925656ff8683b32` and deployed to
   Cloudflare Pages. Both `https://evemisslab.com/` and `/zh/` returned 200 and exposed exactly one
   link to `https://apr.evemisslab.com/`.
+- Why APR PR #5 merged as `6ca53bf87ab90cace0a97dab0237b708e1fd6a19` and deployed as
+  Cloudflare Worker version `afd52b04-c208-47d6-8e9d-a243fa212ade`. The generated site contains
+  14 bilingual page records across seven routes per locale; Wrangler read 40 entries with zero
+  bindings.
+- Post-deploy HTTP and Chrome checks verified the primary homepage CTA, `/why/` and
+  `/zh-TW/why/`, machine discovery, sitemap inclusion, same-origin resources, no injected beacon,
+  no horizontal overflow, zero console problems, and the explicit boundary that visual causal
+  projection is an APR design proposition rather than an implemented arbitrary-scene predictor in
+  v0.10. No universal savings percentage is claimed.
 - No paid Provider call or credential material was used by the website publication or live checks.
 
 ## Parent candidate evidence at measurement time
