@@ -162,6 +162,7 @@ def render_page(route: Route, locale: str) -> str:
             "brandline": "Perceive · Verify · Recover",
             "language": "閱讀繁體中文",
             "source": "Candidate source",
+            "why": "Why APR?",
             "lab": "Open the lab",
             "runtime": "Read the runtime guide",
             "github": "View on GitHub",
@@ -173,6 +174,7 @@ def render_page(route: Route, locale: str) -> str:
             "brandline": "感知 · 驗證 · 復原",
             "language": "Read in English",
             "source": "候選來源",
+            "why": "先看懶人包",
             "lab": "開啟實驗室",
             "runtime": "閱讀 Runtime 指南",
             "github": "在 GitHub 查看",
@@ -187,6 +189,12 @@ def render_page(route: Route, locale: str) -> str:
         )
     commit_url = f"https://github.com/kakon77777-commits/APR/commit/{SITE['source_ref']}"
     lab = render_lab(locale) if route.slug == "lab" else ""
+    why_action = (
+        f'        <a class="control" href="{public_path(locale, "why")}">{ui["why"]}</a>\n'
+        if route.slug == ""
+        else ""
+    )
+    secondary_action_class = "control control--quiet" if route.slug == "" else "control"
     sections = render_sections(page)
     evidence = render_evidence(page, locale)
     return (
@@ -225,8 +233,9 @@ def render_page(route: Route, locale: str) -> str:
         f'      <p class="lede">{html.escape(page["summary"])}</p>\n'
         f'      <p class="status status--{html.escape(page["status_tone"])}"><span class="state-label">{html.escape(page["status_label"])}</span><span>{html.escape(page["status_text"])}</span></p>\n'
         '      <div class="hero-actions">\n'
-        f'        <a class="control" href="{public_path(locale, "lab")}">{ui["lab"]}</a>\n'
-        f'        <a class="control" href="{public_path(locale, "runtime")}">{ui["runtime"]}</a>\n'
+        f"{why_action}"
+        f'        <a class="{secondary_action_class}" href="{public_path(locale, "lab")}">{ui["lab"]}</a>\n'
+        f'        <a class="{secondary_action_class}" href="{public_path(locale, "runtime")}">{ui["runtime"]}</a>\n'
         f'        <a class="control control--quiet" href="https://github.com/kakon77777-commits/APR">{ui["github"]}</a>\n'
         "      </div>\n"
         "    </section>\n"

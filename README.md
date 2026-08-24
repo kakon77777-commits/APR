@@ -49,14 +49,14 @@ Perceive
 | `docs/runtime/` | 架構、協議、保留政策與各版 smoke-test 記錄 |
 | `docs/releases/` | v0.2–v0.10 工程筆記與 0.x 收斂報告 |
 | `docs/provenance/` | 原始壓縮包與來源文件的 SHA-256 清單 |
-| `site/` | 雙語靜態研究網站、離線 Lab、機器探索檔案與 Cloudflare Static Assets 封裝 |
+| `site/` | 雙語靜態研究網站、Why APR 省 Token 懶人包、離線 Lab、機器探索檔案與 Cloudflare Static Assets 封裝 |
 
 完整索引見 [`docs/README.md`](docs/README.md)。
 
 ## 公開靜態網站
 
 `site/build.py` 只使用儲存庫內的 APR 內容與確定性固定案例，產生英文、繁體中文、
-離線 Lab、`llms.txt`、`ai/site.json`、sitemap、robots、雙語 404 與靜態安全標頭。
+Why APR 省 Token 懶人包、離線 Lab、`llms.txt`、`ai/site.json`、sitemap、robots、雙語 404 與靜態安全標頭。
 瀏覽器端不呼叫模型 Provider、API、localhost、桌面 adapter 或未實作的 MCP 服務。
 
 從儲存庫根目錄進行本機驗證與靜態預覽：
@@ -200,7 +200,7 @@ ruff check apr_runtime tests examples site
 python -m build
 ```
 
-目前離線整合驗證為 **178/178 Python tests**（另有 101 個通過的 pytest subtests），另有
+目前離線整合驗證為 **180/180 Python tests**（另有 102 個通過的 pytest subtests），另有
 **9/9 dependency-free Node client tests**。本機候選接受紀錄（含 scoped Ruff、靜態產物、
 Wrangler dry-run 與較早的本機瀏覽器證據）見
 [`docs/experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md`](docs/experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md)；它保留網站分支尚未合併、尚未上線時的 locally accepted release-candidate 證據，並另行記錄後續合併、Cloudflare 部署、RUM 注入修正及真實 Chrome 線上驗證。Runtime/provider 基準為 `60d3f9caeca9b1a8e555a6a580cd7cf238402aa5`；公開網站已上線，但 Runtime 仍是研究型發布候選版。歷史上另有 OpenAI／Anthropic 受控合成視覺 smoke test，以及 Google Vertex

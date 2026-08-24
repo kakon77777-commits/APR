@@ -92,7 +92,7 @@ class SiteBuildTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as raw:
             output = Path(raw)
             self.build(output)
-            routes = ("", "runtime", "lab", "papers", "mcp", "status")
+            routes = ("", "why", "runtime", "lab", "papers", "mcp", "status")
             for route in routes:
                 english = output / route / "index.html" if route else output / "index.html"
                 chinese = output / "zh-TW" / route / "index.html"
@@ -336,12 +336,14 @@ class SiteBuildTests(unittest.TestCase):
             self.assertFalse((output / "stale.bin").exists())
             expected_files = {
                 "index.html",
+                "why/index.html",
                 "runtime/index.html",
                 "lab/index.html",
                 "papers/index.html",
                 "mcp/index.html",
                 "status/index.html",
                 "zh-TW/index.html",
+                "zh-TW/why/index.html",
                 "zh-TW/runtime/index.html",
                 "zh-TW/lab/index.html",
                 "zh-TW/papers/index.html",
@@ -411,7 +413,7 @@ class SiteBuildTests(unittest.TestCase):
             self.build(output)
             pages = [output / "404.html"]
             for locale in ("", "zh-TW"):
-                for route in ("", "runtime", "lab", "papers", "mcp", "status"):
+                for route in ("", "why", "runtime", "lab", "papers", "mcp", "status"):
                     pages.append(output / locale / route / "index.html")
             for page in pages:
                 self.assertIn(favicon_link, page.read_text(encoding="utf-8"), page)
@@ -716,6 +718,80 @@ class SiteBuildTests(unittest.TestCase):
 
             self.assertIn('<a class="brand" href="/zh-TW/" aria-label="APR 首頁">', chinese)
             self.assertIn("感知 · 驗證 · 復原", chinese)
+
+    def test_homepages_offer_a_primary_bilingual_why_apr_entry(self):
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw)
+            self.build(output)
+            english = (output / "index.html").read_text(encoding="utf-8")
+            chinese = (output / "zh-TW/index.html").read_text(encoding="utf-8")
+
+            english_entry = '<a class="control" href="/why/">Why APR?</a>'
+            chinese_entry = '<a class="control" href="/zh-TW/why/">先看懶人包</a>'
+            english_lab = '<a class="control control--quiet" href="/lab/">Open the lab</a>'
+            chinese_lab = '<a class="control control--quiet" href="/zh-TW/lab/">開啟實驗室</a>'
+            english_runtime = (
+                '<a class="control control--quiet" href="/runtime/">Read the runtime guide</a>'
+            )
+            chinese_runtime = (
+                '<a class="control control--quiet" href="/zh-TW/runtime/">閱讀 Runtime 指南</a>'
+            )
+            self.assertIn(english_entry, english)
+            self.assertIn(chinese_entry, chinese)
+            self.assertIn(english_runtime, english)
+            self.assertIn(chinese_runtime, chinese)
+            self.assertLess(english.index(english_entry), english.index(english_lab))
+            self.assertLess(chinese.index(chinese_entry), chinese.index(chinese_lab))
+
+    def test_why_apr_pages_make_the_bounded_multimodal_case_in_plain_language(self):
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw)
+            self.build(output)
+            english_path = output / "why/index.html"
+            chinese_path = output / "zh-TW/why/index.html"
+            self.assertTrue(english_path.is_file(), english_path)
+            self.assertTrue(chinese_path.is_file(), chinese_path)
+            english = english_path.read_text(encoding="utf-8")
+            chinese = chinese_path.read_text(encoding="utf-8")
+
+            for rendered, expected in (
+                (
+                    english,
+                    (
+                        "If AI must reread the whole world every second, that is not understanding.",
+                        "full-speed camera",
+                        "visual causal projection",
+                        "Token",
+                        "latency",
+                        "API cost",
+                        "context pressure",
+                        "design proposition",
+                        "The current v0.10 runtime does not yet predict arbitrary visual scenes.",
+                        "Actual savings depend on the workload",
+                    ),
+                ),
+                (
+                    chinese,
+                    (
+                        "如果 AI 每秒都要重讀完整世界，那不叫理解。",
+                        "全速攝影機",
+                        "視覺因果推演能力",
+                        "Token",
+                        "延遲",
+                        "API 成本",
+                        "上下文壓力",
+                        "架構命題",
+                        "目前 v0.10 Runtime 尚未能預測任意視覺場景。",
+                        "實際節省幅度取決於工作負載",
+                    ),
+                ),
+            ):
+                for phrase in expected:
+                    self.assertIn(phrase, rendered)
+                self.assertNotIn("%", rendered)
+
+            self.assertIn('<a href="/why/" aria-current="page">Why APR?</a>', english)
+            self.assertIn('<a href="/zh-TW/why/" aria-current="page">為什麼 APR？</a>', chinese)
 
     def test_lab_has_six_labelled_controls_and_live_educational_projection(self):
         with tempfile.TemporaryDirectory() as raw:
