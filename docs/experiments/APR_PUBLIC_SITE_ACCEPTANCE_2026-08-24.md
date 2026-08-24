@@ -2,7 +2,7 @@
 
 ## Status and evidence scope
 
-**Status:** locally accepted release candidate. This is not a merged or live release.
+**Status at measurement time:** locally accepted release candidate. This was not a merged or live release.
 
 - Final-fix wave-2 baseline was `aa338493aa333ae986b55dbfd651dde123405328`; this acceptance
   record is co-committed with the tested wave-2 implementation and tests.
@@ -10,6 +10,14 @@
 - Draft PR #1 was not inspected or mutated during final-fix wave 2; the local candidate remains
   unmerged and this record does not claim current remote PR or CI state.
 - No Provider call, credential access, live Cloudflare deploy, push, PR mutation, or merge occurred during candidate acceptance.
+
+## Post-acceptance repository update
+
+- Runtime/provider PR #1 was subsequently merged as
+  `60d3f9caeca9b1a8e555a6a580cd7cf238402aa5`.
+- A later website status-sync commit pins public evidence links to that immutable merge commit.
+- This does not retroactively change the measured candidate results below. The public-site branch,
+  parent index, Cloudflare deployment, and production verification remain separate gates.
 
 ## Measured local validation
 
@@ -51,4 +59,5 @@ The scoped favicon fix `71ba8c0` then passed review. Browser pass 2 observed `/f
 - `apr.evemisslab.com` is not yet deployed.
 - Exact-head browser behavior was not rerun. Earlier browser acceptance used Python's local static
   server. Production headers and custom-domain behavior remain unverified.
-- This record neither merges Draft PR #1 nor changes its `source_ref`; it records measured candidate evidence only.
+- The measured acceptance itself did not merge PR #1 or change its then-current `source_ref`;
+  the post-acceptance update above records the later repository event without rewriting that evidence.

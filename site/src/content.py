@@ -8,7 +8,7 @@ SITE = {
     "origin": "https://apr.evemisslab.com",
     "name": "APR",
     "version": "0.10.0",
-    "source_ref": "d1722eca845353acd3ce1f7241283bfa16263e93",
+    "source_ref": "60d3f9caeca9b1a8e555a6a580cd7cf238402aa5",
     "release_status": "candidate",
 }
 
@@ -455,10 +455,10 @@ PAGES = {
         "status": _page(
             "Evidence and limitations",
             "v0.10 is a research release candidate.",
-            f"This site is pinned to candidate commit {SITE['source_ref']}. The immutable source links below describe the evidence available at that exact revision.",
+            f"This site is pinned to merged runtime baseline {SITE['source_ref']}. The immutable source links below describe the evidence available at that exact revision.",
             "Release truth",
             "uncertain",
-            "Release candidate · Draft PR content is not presented as merged",
+            "Website release candidate · Runtime baseline merged; live deployment not yet claimed",
             ("status", "smoke_v010", "source_manifest"),
             (
                 {
@@ -631,10 +631,10 @@ PAGES = {
         "status": _page(
             "證據與限制",
             "v0.10 是研究型發布候選版。",
-            f"此網站固定於候選 commit {SITE['source_ref']}。下方不可變來源連結描述該精確版本所具有的證據。",
+            f"此網站固定於已合併的 Runtime 基準 {SITE['source_ref']}。下方不可變來源連結描述該精確版本所具有的證據。",
             "發布事實",
             "uncertain",
-            "發布候選版 · Draft PR 內容不表示已合併",
+            "網站發布候選版 · Runtime 基準已合併；尚未宣稱正式上線",
             ("status", "smoke_v010", "source_manifest"),
             (
                 {

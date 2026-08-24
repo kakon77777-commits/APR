@@ -30,12 +30,18 @@ The original cumulative v0.10 snapshot has been integrated into a standalone rep
   wave-2 HEAD;
   see [`docs/experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md`](docs/experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md).
 
+## Repository integration
+
+- Runtime/provider baseline PR #1 is merged as
+  `60d3f9caeca9b1a8e555a6a580cd7cf238402aa5`.
+- Public evidence links are pinned to that immutable merge commit.
+- The public-site implementation and the parent `evemisslab.com` APR index remain release
+  candidates until their own review, merge, deployment, and live verification complete.
+
 ## Not claimed by this status
 
 - production readiness;
-- a merge of Draft PR #1; runtime evidence `source_ref` remains
-  `d1722eca845353acd3ce1f7241283bfa16263e93`, and final-fix wave 2 did not
-  inspect or mutate remote PR/CI state;
+- a merge or deployment of the public-site implementation or parent-site APR index;
 - a live deployment of `apr.evemisslab.com`; only exact-head local build/Node validation and
   Wrangler dry-run packaging, plus earlier local-browser evidence, have been recorded. Production
   headers and custom-domain behavior remain unverified;

@@ -18,7 +18,9 @@ Production deployment remains a separate explicitly authorized operation.
 
 The measured locally accepted release-candidate record is
 [`experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md`](experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md).
-It preserves the not-merged, not-live boundary and the runtime evidence `source_ref`.
+It preserves the measurement-time not-merged, not-live boundary. Runtime/provider PR #1 has
+since merged as `60d3f9caeca9b1a8e555a6a580cd7cf238402aa5`; the website and parent index
+remain separate candidates until their own integration and live verification complete.
 
 ## Theory roots
 
@@ -48,7 +50,7 @@ The versioned files are in [`../papers/`](../papers/).
 
 ## Experiments
 
-- [`experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md`](experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md) — measured local acceptance of the public-site candidate; not merged or deployed.
+- [`experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md`](experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md) — measured local acceptance of the public-site candidate, plus the later runtime-baseline merge update; the website was not deployed by that record.
 - [`experiments/HOSTED_SEMANTIC_SMOKE_2026-08-10.md`](experiments/HOSTED_SEMANTIC_SMOKE_2026-08-10.md) — bounded OpenAI/Anthropic vision-plugin validation, corrections, cost, and limitations.
 - [`experiments/GOOGLE_VERTEX_IMAGE_GENERATION_SMOKE_2026-08-10.md`](experiments/GOOGLE_VERTEX_IMAGE_GENERATION_SMOKE_2026-08-10.md) — real Google Vertex 1K image generation, visual QA, API-contract corrections, and bounded cost evidence.
 
