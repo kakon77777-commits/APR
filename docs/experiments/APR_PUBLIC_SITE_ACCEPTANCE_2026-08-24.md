@@ -37,7 +37,28 @@
 
 Repository-wide Ruff over Markdown code fences is not the release gate and is not reported as a failure. The required scoped Ruff gate is green.
 
-## Parent candidate evidence
+## Production publication update
+
+- Public-site PR #2 merged as `64cefe270f55b31bf684145105342fbd57e8116b`.
+- The first Cloudflare deployment created Worker version
+  `162eb3cf-5a96-46e3-8c66-7f2059178086`. Route, 404, machine-surface, and production-header
+  checks passed, but live Chrome found that Cloudflare had automatically injected its Web
+  Analytics beacon. The same-origin CSP blocked the script and reported console errors.
+- The project did not relax CSP or accept analytics. PR #3 added
+  `Cache-Control: public, max-age=0, must-revalidate, no-transform`, merged as
+  `b7bb18b077b67a1339e3bb811ce091c58b1a7052`, and deployed as Worker version
+  `6b32fb1f-392b-4574-8887-4b9ee26c43e5`.
+- Post-fix HTTP verification observed the exact `no-transform` policy, no injected beacon, the
+  restrictive CSP, the runtime evidence `source_ref`, expected 200 routes, and an expected 404.
+- Post-fix Chrome verification at 390×844 observed same-origin resources only, reduced-motion
+  preference, no horizontal overflow, the expected Chinese default and conflict/exhausted Lab
+  transitions, and zero console warnings/errors.
+- Parent-index PR #1 merged as `f3c34a78322ed061ed4834ca7925656ff8683b32` and deployed to
+  Cloudflare Pages. Both `https://evemisslab.com/` and `/zh/` returned 200 and exposed exactly one
+  link to `https://apr.evemisslab.com/`.
+- No paid Provider call or credential material was used by the website publication or live checks.
+
+## Parent candidate evidence at measurement time
 
 The parent candidate is `327859162a3bb8e9e1ad0ba9c4c2e0aef1d6acf8`: 6/6 tests, 2 pages,
 18 EN/18 ZH sites, and it is not merged or deployed. The parent index commits exist only on
@@ -56,8 +77,9 @@ The scoped favicon fix `71ba8c0` then passed review. Browser pass 2 observed `/f
 
 ## Remaining boundaries
 
-- `apr.evemisslab.com` is not yet deployed.
-- Exact-head browser behavior was not rerun. Earlier browser acceptance used Python's local static
-  server. Production headers and custom-domain behavior remain unverified.
+- The live checks are bounded point-in-time evidence, not an uptime guarantee or long-duration
+  production monitor.
+- The public site is static research infrastructure. It does not expose a hosted APR runtime,
+  Provider endpoint, desktop-control path, or implemented MCP service.
 - The measured acceptance itself did not merge PR #1 or change its then-current `source_ref`;
   the post-acceptance update above records the later repository event without rewriting that evidence.

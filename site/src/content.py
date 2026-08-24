@@ -454,11 +454,11 @@ PAGES = {
         ),
         "status": _page(
             "Evidence and limitations",
-            "v0.10 is a research release candidate.",
-            f"This site is pinned to merged runtime baseline {SITE['source_ref']}. The immutable source links below describe the evidence available at that exact revision.",
+            "v0.10 remains a research release candidate; the public research site is live.",
+            f"This live public site is pinned to merged runtime baseline {SITE['source_ref']}. The immutable source links below describe the evidence available at that exact revision.",
             "Release truth",
             "uncertain",
-            "Website release candidate · Runtime baseline merged; live deployment not yet claimed",
+            "Live public site · Runtime remains a research release candidate",
             ("status", "smoke_v010", "source_manifest"),
             (
                 {
@@ -630,11 +630,11 @@ PAGES = {
         ),
         "status": _page(
             "證據與限制",
-            "v0.10 是研究型發布候選版。",
-            f"此網站固定於已合併的 Runtime 基準 {SITE['source_ref']}。下方不可變來源連結描述該精確版本所具有的證據。",
+            "v0.10 仍是研究型發布候選版；公開研究網站已上線。",
+            f"此公開網站已上線，並固定於已合併的 Runtime 基準 {SITE['source_ref']}。下方不可變來源連結描述該精確版本所具有的證據。",
             "發布事實",
             "uncertain",
-            "網站發布候選版 · Runtime 基準已合併；尚未宣稱正式上線",
+            "公開網站已上線 · Runtime 仍是研究型發布候選版",
             ("status", "smoke_v010", "source_manifest"),
             (
                 {
