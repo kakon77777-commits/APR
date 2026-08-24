@@ -70,6 +70,15 @@ from .executor import (
     ExecutionResult,
 )
 from .frame_delta import FrameDelta, FrameDeltaDetector
+from .hosted_semantic import (
+    DEFAULT_ANTHROPIC_MODEL,
+    DEFAULT_OPENAI_MODEL,
+    AnthropicMessagesSemanticInspector,
+    HostedSemanticError,
+    HostedSemanticInspectorsPlugin,
+    OpenAIResponsesSemanticInspector,
+)
+from .image_generation import ImageGenerationResult, ImageGenerator
 
 # v0.3 semantic evidence layer
 from .image_ops import (
@@ -178,6 +187,13 @@ from .sources import (
 from .stream import RealStreamConfig, RealStreamMonitor, StreamEvent
 from .task_runtime import TaskAwareIngestReport, TaskAwarePerceptionRuntime
 from .uia_targeted import PywinautoTargetedUIAReader, UIASubtreeResult
+from .vertex_image import (
+    DEFAULT_VERTEX_IMAGE_MODEL,
+    DEFAULT_VERTEX_LOCATION,
+    GoogleVertexImageGenerationPlugin,
+    GoogleVertexImageGenerator,
+    VertexImageGenerationError,
+)
 from .win_events import Win32NativeEventSource, WinEventConfig
 
 __all__ = [
@@ -233,9 +249,15 @@ __all__ = [
     "FrameDelta",
     "FrameDeltaDetector",
     "Goal",
+    "GoogleVertexImageGenerationPlugin",
+    "GoogleVertexImageGenerator",
     "HistoricalRevisitRecord",
     "HistoricalRevisitService",
+    "HostedSemanticError",
+    "HostedSemanticInspectorsPlugin",
     "IngestReport",
+    "ImageGenerationResult",
+    "ImageGenerator",
     "LoadedPlugin",
     "MSSScreenSource",
     "Modality",
@@ -245,6 +267,7 @@ __all__ = [
     "NeedRefreshPlanner",
     "NeedState",
     "ObservationSpec",
+    "OpenAIResponsesSemanticInspector",
     "OutcomeDecision",
     "OutcomeDecisionKind",
     "OutcomeExecutionResult",
@@ -314,10 +337,16 @@ __all__ = [
     "UnifiedEventRuntime",
     "UnifiedEventScheduler",
     "VerifiedEvent",
+    "VertexImageGenerationError",
     "Win32ForegroundWindowSource",
     "Win32NativeEventSource",
     "WinEventConfig",
     "WorldState",
+    "AnthropicMessagesSemanticInspector",
+    "DEFAULT_ANTHROPIC_MODEL",
+    "DEFAULT_OPENAI_MODEL",
+    "DEFAULT_VERTEX_IMAGE_MODEL",
+    "DEFAULT_VERTEX_LOCATION",
     "__version__",
     "clamp_bbox",
     "crop_frame",

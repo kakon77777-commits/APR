@@ -43,7 +43,7 @@ Perceive
 | --- | --- |
 | `apr_runtime/` | v0.1–v0.10 累積 runtime 與插件 registry |
 | `tests/` | 世界狀態、事件、證據、action gate、outcome、recovery、插件與輸入不變量測試 |
-| `examples/` | 合成串流、browser state、need graph、action readiness、closed-loop recovery 等示例 |
+| `examples/` | 合成串流、hosted vision、browser state、need graph、action readiness、closed-loop recovery 等示例 |
 | `papers/` | APR-01 至 APR-07 理論系列 |
 | `docs/theory/` | APR 統一白皮書與 ACR 理論根源 |
 | `docs/runtime/` | 架構、協議、保留政策與各版 smoke-test 記錄 |
@@ -136,6 +136,39 @@ adapter = registry.create_component("adapter", "my_adapter", config=my_config)
 
 APR 不會自動執行第三方插件。Python entry point 載入必須由呼叫端顯式觸發，且應只載入可信任的程式碼。完整契約與打包範例見 [`docs/PLUGIN_API.md`](docs/PLUGIN_API.md)。
 
+內建的 hosted semantic plugin 可把 OpenAI Responses 或 Anthropic Messages 視覺輸出轉成相同的 APR `SemanticResult`，但只有在呼叫 `inspect()` 時才會連線：
+
+```python
+from apr_runtime import HostedSemanticInspectorsPlugin, PluginRegistry
+
+registry = PluginRegistry()
+registry.install(HostedSemanticInspectorsPlugin())
+openai_inspector = registry.create_component("semantic_inspector", "openai")
+```
+
+憑證只從 `OPENAI_API_KEY`／`ANTHROPIC_API_KEY` 環境變數讀取。低成本雙供應商實測方式與限制見 [`docs/experiments/HOSTED_SEMANTIC_SMOKE_2026-08-10.md`](docs/experiments/HOSTED_SEMANTIC_SMOKE_2026-08-10.md)。
+
+Google Vertex 插件提供真正的文字轉影像輸出，同時保持網路與認證為顯式、延遲發生的操作：
+
+```python
+from apr_runtime import GoogleVertexImageGenerationPlugin, PluginRegistry
+
+registry = PluginRegistry()
+registry.install(GoogleVertexImageGenerationPlugin())
+generator = registry.create_component(
+    "image_generator",
+    "google_vertex",
+    project_id="your-project-id",
+)
+result = generator.generate("one quiet observatory instrument", output_path="output.png")
+```
+
+先安裝 `pip install -e ".[vertex]"`，並以 Application Default Credentials 或
+`GOOGLE_APPLICATION_CREDENTIALS` 提供 Google 認證。預設值為 `global`、
+`gemini-3.1-flash-lite-image`、一張 1K 圖、無自動重試；插件會按實際 MIME 保存 PNG 或
+JPEG，而不偽造副檔名。實測圖片、踩坑、成本與限制見
+[`docs/experiments/GOOGLE_VERTEX_IMAGE_GENERATION_SMOKE_2026-08-10.md`](docs/experiments/GOOGLE_VERTEX_IMAGE_GENERATION_SMOKE_2026-08-10.md)。
+
 ## 驗證
 
 ```powershell
@@ -146,7 +179,9 @@ ruff check apr_runtime tests examples
 python -m build
 ```
 
-目前本地整合驗證為 **99/99 tests passed**；其中真實桌面、Chromium CDP、VLM 與長時間 benchmark 屬於選用／後續驗證軌，不應由純單元測試結果代替。
+目前本地整合驗證為 **117/117 tests passed**；另有 OpenAI／Anthropic 受控合成視覺
+smoke test，以及 Google Vertex 的真實 1K 影像生成與人工視覺驗證。這仍不等同真實
+桌面、Chromium CDP、廣泛 VLM／影像生成 benchmark 或長時間可靠性驗證。
 
 ## 引用
 
