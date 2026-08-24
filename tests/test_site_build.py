@@ -147,7 +147,7 @@ class SiteBuildTests(unittest.TestCase):
                     else:
                         self.fail(f"protected output was accepted: {candidate}")
 
-    def test_source_public_and_git_descendants_are_rejected_before_mutation(self):
+    def test_source_public_and_git_metadata_descendants_are_rejected_before_mutation(self):
         build = load_build()
 
         class MutationAttempt(RuntimeError):
@@ -156,20 +156,13 @@ class SiteBuildTests(unittest.TestCase):
         def mutation_attempt(*_args, **_kwargs):
             raise MutationAttempt("the builder attempted mutation before rejecting the output")
 
-        git_marker = build.ROOT / ".git"
-        git_pointer = git_marker.read_text(encoding="utf-8").strip()
-        self.assertTrue(git_pointer.startswith("gitdir:"), git_pointer)
-        actual_git_dir = Path(git_pointer.removeprefix("gitdir:").strip())
-        if not actual_git_dir.is_absolute():
-            actual_git_dir = git_marker.parent / actual_git_dir
-        actual_git_dir = actual_git_dir.resolve()
-
-        for candidate in (
+        candidates = (
             build.SOURCE / "assets",
             build.PUBLIC / "generated-child",
-            build.ROOT / ".git" / "objects",
-            actual_git_dir / "generated-child",
-        ):
+            *(path / "generated-child" for path in build._git_metadata_paths()),
+        )
+
+        for candidate in candidates:
             with self.subTest(candidate=candidate):
                 with (
                     mock.patch.object(build.shutil, "rmtree", side_effect=mutation_attempt),
