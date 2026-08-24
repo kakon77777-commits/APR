@@ -538,6 +538,9 @@ class SiteBuildTests(unittest.TestCase):
             self.assertIn("frame-ancestors 'none'", headers)
             self.assertIn("Referrer-Policy: no-referrer", headers)
             self.assertIn("X-Content-Type-Options: nosniff", headers)
+            self.assertIn(
+                "Cache-Control: public, max-age=0, must-revalidate, no-transform", headers
+            )
 
     def test_public_copy_is_recursive_and_rejects_generated_collisions(self):
         build = load_build()
