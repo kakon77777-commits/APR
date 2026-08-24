@@ -49,8 +49,29 @@ Perceive
 | `docs/runtime/` | 架構、協議、保留政策與各版 smoke-test 記錄 |
 | `docs/releases/` | v0.2–v0.10 工程筆記與 0.x 收斂報告 |
 | `docs/provenance/` | 原始壓縮包與來源文件的 SHA-256 清單 |
+| `site/` | 雙語靜態研究網站、離線 Lab、機器探索檔案與 Cloudflare Static Assets 封裝 |
 
 完整索引見 [`docs/README.md`](docs/README.md)。
+
+## 公開靜態網站
+
+`site/build.py` 只使用儲存庫內的 APR 內容與確定性固定案例，產生英文、繁體中文、
+離線 Lab、`llms.txt`、`ai/site.json`、sitemap、robots、雙語 404 與靜態安全標頭。
+瀏覽器端不呼叫模型 Provider、API、localhost、桌面 adapter 或未實作的 MCP 服務。
+
+從儲存庫根目錄進行本機驗證與靜態預覽：
+
+```powershell
+Push-Location site
+npm ci
+npm run validate
+npm run deploy:dry
+Pop-Location
+python -m http.server 8000 --directory site/dist
+```
+
+`npm run deploy:dry` 只執行 Wrangler dry-run。`npm run deploy` 是另外保留的正式發布入口；
+production deployment 必須另行取得明確授權，並不屬於本機驗證流程。
 
 ## 快速開始
 
@@ -174,13 +195,16 @@ JPEG，而不偽造副檔名。實測圖片、踩坑、成本與限制見
 ```powershell
 python -m unittest discover -s tests -v
 python -m pytest
-ruff format --check apr_runtime tests examples
-ruff check apr_runtime tests examples
+ruff format --check apr_runtime tests examples site
+ruff check apr_runtime tests examples site
 python -m build
 ```
 
-目前本地整合驗證為 **117/117 tests passed**；另有 OpenAI／Anthropic 受控合成視覺
-smoke test，以及 Google Vertex 的真實 1K 影像生成與人工視覺驗證。這仍不等同真實
+目前離線整合驗證為 **178/178 Python tests**（另有 101 個通過的 pytest subtests），另有
+**9/9 dependency-free Node client tests**。本機候選接受紀錄（含 scoped Ruff、靜態產物、
+Wrangler dry-run 與較早的本機瀏覽器證據）見
+[`docs/experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md`](docs/experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md)；它記錄的是網站分支尚未合併、尚未上線時的 locally accepted release candidate。Runtime/provider 基準後來已合併為 `60d3f9caeca9b1a8e555a6a580cd7cf238402aa5`，但網站仍須經過自己的合併、部署與線上驗證；final-fix wave-2 HEAD 並未重跑瀏覽器。歷史上另有 OpenAI／Anthropic 受控合成視覺 smoke test，以及 Google Vertex
+的真實 1K 影像生成與人工視覺驗證。這仍不等同真實
 桌面、Chromium CDP、廣泛 VLM／影像生成 benchmark 或長時間可靠性驗證。
 
 ## 引用

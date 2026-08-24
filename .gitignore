@@ -10,6 +10,7 @@ build/
 dist/
 .venv/
 venv/
+.worktrees/
 .env
 .env.*
 !.env.example
@@ -22,3 +23,6 @@ service-account*.json
 artifacts/
 recovery-trace*.json
 recovery-trace*.md
+site/dist/
+site/node_modules/
+site/.wrangler/

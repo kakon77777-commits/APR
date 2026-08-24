@@ -1,0 +1,16 @@
+{
+  "name": "apr-evemisslab-site",
+  "private": true,
+  "version": "0.10.0",
+  "type": "module",
+  "scripts": {
+    "build": "python build.py --output dist",
+    "test:client": "cd .. && node --test tests/site_app.test.mjs",
+    "validate": "npm run build && npm run test:client",
+    "deploy:dry": "npm run validate && wrangler deploy --dry-run",
+    "deploy": "npm run validate && wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.125.0"
+  }
+}
