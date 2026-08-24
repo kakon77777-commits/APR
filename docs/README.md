@@ -9,8 +9,8 @@
 
 ## Public research site
 
-[`../site/`](../site/) contains the standard-library static compiler, bilingual offline APR
-Lab, machine-discovery surfaces, restrictive `_headers`, and an entrypoint-free Cloudflare
+[`../site/`](../site/) contains the standard-library static compiler, bilingual Why APR
+plain-language guide, offline APR Lab, machine-discovery surfaces, restrictive `_headers`, and an entrypoint-free Cloudflare
 Workers Static Assets package. Run `npm ci` and `npm run validate` inside `site/`; use
 `npm run deploy:dry` for schema/configuration packaging evidence. The generated site has no
 Provider, API, binding, secret, localhost, desktop-control, analytics, or authentication path.

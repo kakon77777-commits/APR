@@ -208,6 +208,14 @@ ROUTES = (
         {"en": "Adaptive Perceptual Reading", "zh-TW": "自適應感知閱讀"},
     ),
     Route(
+        "why",
+        {"en": "Why APR?", "zh-TW": "為什麼 APR？"},
+        {
+            "en": "The token-saving multimodal case in plain language",
+            "zh-TW": "多模態省 Token 懶人包",
+        },
+    ),
+    Route(
         "runtime",
         {"en": "Runtime", "zh-TW": "Runtime"},
         {"en": "APR runtime architecture", "zh-TW": "APR Runtime 架構"},
@@ -311,6 +319,110 @@ PAGES = {
                 {
                     "title": "Start with evidence",
                     "body": "Explore the runtime guide, inspect the bounded offline lab, or read the papers. Every technical page links to an immutable candidate source reference.",
+                },
+            ),
+        ),
+        "why": _page(
+            "The plain-language case",
+            "If AI must reread the whole world every second, that is not understanding.",
+            "Treating a model like a full-speed camera is what happens when a system has no visual causal projection. APR's design proposition is to keep bounded state, model ordinary continuity, and spend perception when change or uncertainty actually justifies it.",
+            "APR attitude",
+            "budget",
+            "Design proposition: model the ordinary, observe the difference, verify before acting.",
+            (
+                "runtime_architecture",
+                "event_runtime",
+                "need_graph",
+                "budget",
+                "outcome",
+                "apr_04",
+                "whitepaper",
+            ),
+            (
+                {
+                    "title": "Brute-force multimodality is not intelligence",
+                    "body": "Reading every frame, the whole frame, at maximum depth can imitate awareness by spending more compute. It does not prove that the system understands continuity, predicts consequences, or knows what no longer needs attention.",
+                    "items": (
+                        (
+                            "Brute force",
+                            "Full frame → full read → expensive Provider → forget → repeat.",
+                            "danger",
+                        ),
+                        (
+                            "APR",
+                            "Change event → perceptual need → targeted evidence → bounded state → verify.",
+                            "verified",
+                        ),
+                    ),
+                },
+                {
+                    "title": "The five-step shortcut",
+                    "body": "The APR proposition does not require a complete copy of the world every second. A capable implementation should preserve what has been verified, track what may have changed, and escalate observation only when the next decision needs more evidence.",
+                    "items": (
+                        (
+                            "Change",
+                            "Detect an event or difference before requesting a full read.",
+                            "observe",
+                        ),
+                        (
+                            "Proposition",
+                            "Use verified state to model ordinary continuity; re-observe when the model is insufficient.",
+                            "verified",
+                        ),
+                        (
+                            "Need",
+                            "Name the fact that is unknown, stale, conflicted, or action-critical.",
+                            "uncertain",
+                        ),
+                        (
+                            "Read",
+                            "Choose the cheapest sufficient region, depth, and modality.",
+                            "budget",
+                        ),
+                        (
+                            "Verify",
+                            "Re-observe the outcome when an action can change the world.",
+                            "danger",
+                        ),
+                    ),
+                },
+                {
+                    "title": "What users and investors actually care about",
+                    "body": "Less avoidable Token use can mean lower latency, fewer API cost spikes, less context pressure, longer-running sessions, and a system that can scale without treating every quiet second as a brand-new universe.",
+                    "items": (
+                        (
+                            "User",
+                            "Faster responses and longer useful multimodal sessions.",
+                            "observe",
+                        ),
+                        (
+                            "Operator",
+                            "Fewer unnecessary Provider calls and clearer budget control.",
+                            "budget",
+                        ),
+                        (
+                            "Investor",
+                            "A path from impressive demo to economically repeatable runtime.",
+                            "verified",
+                        ),
+                        (
+                            "Agent",
+                            "Persistent evidence instead of perpetual visual amnesia.",
+                            "uncertain",
+                        ),
+                    ),
+                },
+                {
+                    "title": "Token savings are only the first visible result",
+                    "body": "APR is also about persistent world state, evidence provenance, visual causal projection, action gating, outcome verification, and recovery. Compression alone cannot tell an agent when it is safe to act or when reality has invalidated its prediction.",
+                },
+                {
+                    "title": "Current implementation boundary",
+                    "body": "The current v0.10 runtime does not yet predict arbitrary visual scenes. It implements event, evidence, world-state, perceptual-need, budget, action-gate, outcome-verification, and recovery primitives; learned visual causal projection and measured savings remain research work.",
+                },
+                {
+                    "title": "No magic savings claim",
+                    "body": "Actual savings depend on the workload, scene-change rate, task risk, available structured signals, and Provider pricing. APR removes avoidable perception by method; benchmarks must measure the result instead of inventing a universal number.",
                 },
             ),
         ),
@@ -503,6 +615,78 @@ PAGES = {
                 {
                     "title": "從證據開始",
                     "body": "可探索 Runtime 指南、查看有界離線實驗室，或閱讀論文。每個技術頁面都連回不可變的候選來源版本。",
+                },
+            ),
+        ),
+        "why": _page(
+            "不專業懶人包",
+            "如果 AI 每秒都要重讀完整世界，那不叫理解。",
+            "把模型當成全速攝影機，是系統缺乏視覺因果推演能力時才會採用的辦法。APR 的架構命題是保存有界狀態、建模平常的連續性，只在變化或不確定性真的值得時花費感知資源。",
+            "APR 的態度",
+            "budget",
+            "架構命題：可預測的不要重讀；真正改變的才重新觀察；要行動時再驗證。",
+            (
+                "runtime_architecture",
+                "event_runtime",
+                "need_graph",
+                "budget",
+                "outcome",
+                "apr_04",
+                "whitepaper",
+            ),
+            (
+                {
+                    "title": "暴力多模態不是智能",
+                    "body": "每一幀都讀、整張畫面都讀、每次都用最大深度，只能用更多算力模仿持續理解。它不能證明系統理解連續性、能預測後果，或知道哪些東西已經不必再看。",
+                    "items": (
+                        (
+                            "暴力方法",
+                            "完整畫面 → 完整閱讀 → 昂貴 Provider → 忘記 → 重來。",
+                            "danger",
+                        ),
+                        (
+                            "APR",
+                            "變化事件 → 感知需求 → 定向證據 → 有界狀態 → 驗證。",
+                            "verified",
+                        ),
+                    ),
+                },
+                {
+                    "title": "五步省下無效感知",
+                    "body": "APR 的命題不要求每一秒都保存完整世界。一個完整實作應保存已驗證的內容、追蹤可能發生的變化，只有下一個決策真的缺證據時，才提高觀察成本。",
+                    "items": (
+                        ("變化", "先偵測事件或差異，不自動要求完整閱讀。", "observe"),
+                        (
+                            "命題",
+                            "用已驗證狀態建模平常連續性；模型不足時重新觀察。",
+                            "verified",
+                        ),
+                        ("需求", "指出未知、過期、矛盾或行動關鍵的事實。", "uncertain"),
+                        ("閱讀", "選擇足夠且最便宜的區域、深度與模態。", "budget"),
+                        ("驗證", "行動可能改變世界時，再觀察真實結果。", "danger"),
+                    ),
+                },
+                {
+                    "title": "用戶與投資人真正關心什麼",
+                    "body": "減少不必要的 Token，通常也意味著更低延遲、更少 API 成本尖峰、更小上下文壓力、更長的持續多模態工作時間，以及不把每個安靜瞬間都當成全新宇宙的擴展能力。",
+                    "items": (
+                        ("用戶", "回應更快，多模態陪伴與工作能持續更久。", "observe"),
+                        ("營運", "減少無效 Provider 呼叫，預算更容易治理。", "budget"),
+                        ("投資人", "從驚豔展示走向可重複的經濟型 Runtime。", "verified"),
+                        ("代理", "保存持續證據，不再永遠視覺失憶。", "uncertain"),
+                    ),
+                },
+                {
+                    "title": "省 Token 只是第一個看得見的結果",
+                    "body": "APR 同時處理持續世界狀態、證據出處、視覺因果推演、行動閘門、結果驗證與復原。單純壓縮不能告訴代理何時可以安全行動，也不能在現實推翻預測時讓它修正。",
+                },
+                {
+                    "title": "目前實作邊界",
+                    "body": "目前 v0.10 Runtime 尚未能預測任意視覺場景。它已實作事件、證據、世界狀態、感知需求、預算、行動閘門、結果驗證與復原等基礎；學習式視覺因果推演與實測節省幅度仍是後續研究。",
+                },
+                {
+                    "title": "不亂報神奇數字",
+                    "body": "實際節省幅度取決於工作負載、畫面變化率、任務風險、可用結構化訊號與 Provider 定價。APR 用方法移除可避免的感知；最後應由 benchmark 量測，而不是先發明一個萬用數字。",
                 },
             ),
         ),

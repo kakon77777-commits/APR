@@ -8,13 +8,13 @@ The original cumulative v0.10 snapshot has been integrated into a standalone rep
 
 ## Verified locally
 
-- 178/178 offline Python unit and integration-style tests under both unittest and pytest,
-  plus 101 passing pytest subtests;
+- 180/180 offline Python unit and integration-style tests under both unittest and pytest,
+  plus 102 passing pytest subtests;
 - 9/9 dependency-free Node client-behavior tests;
-- deterministic bilingual static-site output, machine discovery, restrictive static headers,
+- deterministic bilingual static-site output with a plain-language Why APR guide, machine discovery, restrictive static headers,
   a production publication validator, fail-closed transactional replacement, and an
-  entrypoint-free Wrangler 4.125.0 assets-only dry run with no bindings; Wrangler reports 36
-  entries while the filesystem census is separately 22 files plus 14 directories;
+  entrypoint-free Wrangler 4.125.0 assets-only dry run with no bindings; Wrangler reports 40
+  entries while the filesystem census is separately 24 files plus 16 directories;
 - package import and explicit public export surface;
 - transactional plugin registration and entry-point failure reporting;
 - finite/range validation for core confidence, risk, TTL, cost, and budget values;
