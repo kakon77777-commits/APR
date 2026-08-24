@@ -387,57 +387,60 @@ def validate_output_path(output: Path) -> Path:
     return candidate
 
 
+def _expected_generated_index() -> dict[str, object]:
+    pages: list[dict[str, object]] = []
+    for locale in LOCALES:
+        for route in ROUTES:
+            evidence_ids = PAGES[locale][route.slug]["evidence_ids"]
+            if type(evidence_ids) is not tuple or any(
+                type(evidence_id) is not str or evidence_id not in EVIDENCE
+                for evidence_id in evidence_ids
+            ):
+                raise ValueError("page evidence IDs drifted from the canonical catalog")
+            pages.append(
+                {
+                    "locale": locale,
+                    "slug": route.slug,
+                    "title": route.title[locale],
+                    "description": route.description[locale],
+                    "path": route_path(Path(), locale, route.slug).as_posix(),
+                    "url": canonical_url(locale, route.slug),
+                    "evidence_ids": list(evidence_ids),
+                }
+            )
+    return {"schema": "apr-site-index/v1", "site": dict(SITE), "pages": pages}
+
+
 def _is_valid_generated_index(index: object) -> bool:
-    if type(index) is not dict or set(index) != {"schema", "site", "pages"}:
-        return False
-    if index.get("schema") != "apr-site-index/v1":
-        return False
-    site = index.get("site")
-    if (
-        type(site) is not dict
-        or site.get("name") != SITE["name"]
-        or site.get("origin") != SITE["origin"]
-        or type(site.get("source_ref")) is not str
-    ):
-        return False
-    pages = index.get("pages")
-    if type(pages) is not list or len(pages) != len(LOCALES) * len(ROUTES):
+    try:
+        expected = _expected_generated_index()
+    except (KeyError, TypeError, ValueError):
         return False
 
-    expected_pairs = {(locale, route.slug) for locale in LOCALES for route in ROUTES}
-    actual_pairs: set[tuple[str, str]] = set()
-    expected_page_fields = {
-        "locale",
-        "slug",
-        "title",
-        "description",
-        "path",
-        "url",
-        "evidence_ids",
-    }
-    for page in pages:
-        if type(page) is not dict or set(page) != expected_page_fields:
-            return False
-        locale = page["locale"]
-        slug = page["slug"]
-        if type(locale) is not str or type(slug) is not str:
-            return False
-        relative_path = page["path"]
-        if type(relative_path) is not str:
-            return False
-        parsed_path = Path(relative_path)
-        if parsed_path.is_absolute() or ".." in parsed_path.parts:
-            return False
-        if any(
-            type(page[field]) is not str or not page[field]
-            for field in ("title", "description", "url")
-        ):
-            return False
-        evidence_ids = page["evidence_ids"]
-        if type(evidence_ids) is not list or any(type(item) is not str for item in evidence_ids):
-            return False
-        actual_pairs.add((locale, slug))
-    return actual_pairs == expected_pairs
+    if type(index) is not dict or set(index) != set(expected):
+        return False
+    site = index["site"]
+    expected_site = expected["site"]
+    if type(site) is not dict or set(site) != set(expected_site):
+        return False
+    pages = index["pages"]
+    expected_pages = expected["pages"]
+    if type(pages) is not list or len(pages) != len(expected_pages):
+        return False
+
+    expected_page_fields = set(expected_pages[0])
+    if any(
+        type(page) is not dict
+        or set(page) != expected_page_fields
+        or type(page["locale"]) is not str
+        or type(page["slug"]) is not str
+        for page in pages
+    ):
+        return False
+    page_pairs = [(page["locale"], page["slug"]) for page in pages]
+    if len(set(page_pairs)) != len(page_pairs):
+        return False
+    return index == expected
 
 
 def _existing_output_is_approved(output: Path) -> bool:

@@ -4,9 +4,10 @@
 
 **Status:** locally accepted release candidate. This is not a merged or live release.
 
-- Final APR HEAD before this documentation commit: `eb9d1138c4a40403e7d78226c20449e04b3422ab`.
+- Final-fix wave-2 baseline was `aa338493aa333ae986b55dbfd651dde123405328`; this acceptance
+  record is co-committed with the tested wave-2 implementation and tests.
 - Runtime evidence `source_ref` remains `d1722eca845353acd3ce1f7241283bfa16263e93`.
-- Draft PR #1 was not inspected or mutated during this final-fix pass; the local candidate remains
+- Draft PR #1 was not inspected or mutated during final-fix wave 2; the local candidate remains
   unmerged and this record does not claim current remote PR or CI state.
 - No Provider call, credential access, live Cloudflare deploy, push, PR mutation, or merge occurred during candidate acceptance.
 
@@ -14,8 +15,8 @@
 
 | Gate | Measured result |
 | --- | --- |
-| Python unittest | 174/174 pass |
-| pytest | 174/174 pass; 50 subtests pass |
+| Python unittest | 178/178 pass |
+| pytest | 178/178 pass; 101 subtests pass |
 | Node client behavior | 9/9 pass |
 | Node syntax | pass |
 | Required Ruff scope `apr_runtime tests examples site` | 107 files formatted; lint pass |
@@ -37,7 +38,7 @@ their local branch.
 ## Prior local browser acceptance
 
 The observations below predate final-fix HEAD `eb9d1138c4a40403e7d78226c20449e04b3422ab`.
-Browser and desktop automation were explicitly excluded from the final-fix pass, so they remain
+Browser and desktop automation were explicitly excluded from both final-fix waves, so they remain
 historical evidence rather than an exact-head browser claim. Exact-head client behavior is covered
 by the 9/9 dependency-free Node tests above.
 

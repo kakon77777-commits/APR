@@ -83,12 +83,20 @@ _EXPECTED_SCENARIO_KEYS = frozenset(":".join(values) for values in product(*CONT
 _FORBIDDEN_TERMS = frozenset(
     {"id", "path", "pointer", "token", "credential", "private", "raw_response"}
 )
+_SIMPLE_PLURAL_TERMS = {
+    "ids": "id",
+    "paths": "path",
+    "pointers": "pointer",
+    "tokens": "token",
+    "credentials": "credential",
+    "responses": "response",
+}
 
 
 def _normalized_terms(value: str) -> set[str]:
     normalized = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", value)
     normalized = re.sub(r"[^A-Za-z0-9]+", "_", normalized).strip("_").lower()
-    parts = [part for part in normalized.split("_") if part]
+    parts = [_SIMPLE_PLURAL_TERMS.get(part, part) for part in normalized.split("_") if part]
     terms = set(parts)
     if any(
         left == "raw" and right == "response" for left, right in zip(parts, parts[1:], strict=False)

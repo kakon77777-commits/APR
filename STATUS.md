@@ -8,8 +8,8 @@ The original cumulative v0.10 snapshot has been integrated into a standalone rep
 
 ## Verified locally
 
-- 174/174 offline Python unit and integration-style tests under both unittest and pytest,
-  plus 50 passing pytest subtests;
+- 178/178 offline Python unit and integration-style tests under both unittest and pytest,
+  plus 101 passing pytest subtests;
 - 9/9 dependency-free Node client-behavior tests;
 - deterministic bilingual static-site output, machine discovery, restrictive static headers,
   a production publication validator, fail-closed transactional replacement, and an
@@ -26,14 +26,15 @@ The original cumulative v0.10 snapshot has been integrated into a standalone rep
 - prior locally accepted browser evidence on Python's local static server: readable EN/ZH home and
   Lab, MCP and 404 pages; correct Lab transition cases; 390×844 without horizontal overflow;
   same-origin resources; and 0 console warnings/errors after the scoped favicon fix
-  (`/favicon.svg` 200 and no `/favicon.ico`). Browser evidence was not rerun at the final-fix HEAD;
+  (`/favicon.svg` 200 and no `/favicon.ico`). Browser evidence was not rerun at the final-fix
+  wave-2 HEAD;
   see [`docs/experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md`](docs/experiments/APR_PUBLIC_SITE_ACCEPTANCE_2026-08-24.md).
 
 ## Not claimed by this status
 
 - production readiness;
 - a merge of Draft PR #1; runtime evidence `source_ref` remains
-  `d1722eca845353acd3ce1f7241283bfa16263e93`, and this final-fix pass did not
+  `d1722eca845353acd3ce1f7241283bfa16263e93`, and final-fix wave 2 did not
   inspect or mutate remote PR/CI state;
 - a live deployment of `apr.evemisslab.com`; only exact-head local build/Node validation and
   Wrangler dry-run packaging, plus earlier local-browser evidence, have been recorded. Production

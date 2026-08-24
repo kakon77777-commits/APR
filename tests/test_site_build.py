@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import html as html_module
 import importlib.util
 import json
@@ -58,6 +59,34 @@ class SiteBuildTests(unittest.TestCase):
             cwd=ROOT,
             check=True,
         )
+
+    def assert_generated_index_mutation_is_rejected(self, mutate) -> None:
+        build = load_build()
+        with tempfile.TemporaryDirectory() as raw:
+            parent = Path(raw)
+            output = parent / "owned-output"
+            build.build(output)
+
+            index_path = output / "ai/site.json"
+            index = json.loads(index_path.read_text(encoding="utf-8"))
+            mutate(index)
+            index_path.write_text(
+                json.dumps(index, ensure_ascii=False, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            (output / "keep.bin").write_bytes(b"\x00preserve-mutated-output\xff")
+            before = snapshot_tree(output)
+
+            error = None
+            try:
+                build.build(output)
+            except ValueError as exc:
+                error = str(exc)
+
+            self.assertIsNotNone(error, "a noncanonical generated index was accepted as owned")
+            self.assertIn("refusing to replace non-empty unowned output", error)
+            self.assertEqual(before, snapshot_tree(output))
+            self.assertEqual({output}, set(parent.iterdir()))
 
     def test_build_emits_every_bilingual_route(self):
         with tempfile.TemporaryDirectory() as raw:
@@ -174,6 +203,100 @@ class SiteBuildTests(unittest.TestCase):
                 self.fail("a non-empty unowned output directory was rebuilt")
 
             self.assertEqual(before, snapshot_tree(output))
+
+    def test_generated_index_must_exactly_match_canonical_ownership_contract(self):
+        mutations = (
+            ("missing_top_level_site", lambda index: index.pop("site")),
+            ("extra_top_level_field", lambda index: index.__setitem__("owner", "other")),
+            ("missing_site_field", lambda index: index["site"].pop("version")),
+            ("extra_site_field", lambda index: index["site"].__setitem__("owner", "other")),
+            ("wrong_site_name", lambda index: index["site"].__setitem__("name", "Other")),
+            (
+                "wrong_site_origin",
+                lambda index: index["site"].__setitem__("origin", "https://example.invalid"),
+            ),
+            ("wrong_site_version", lambda index: index["site"].__setitem__("version", "9.9.9")),
+            (
+                "wrong_site_source_ref",
+                lambda index: index["site"].__setitem__("source_ref", "0" * 40),
+            ),
+            (
+                "wrong_site_release_status",
+                lambda index: index["site"].__setitem__("release_status", "live"),
+            ),
+            (
+                "source_ref_wrong_shape",
+                lambda index: index["site"].__setitem__("source_ref", ["0" * 40]),
+            ),
+            ("missing_route_record", lambda index: index["pages"].pop()),
+            (
+                "extra_route_record",
+                lambda index: index["pages"].append(copy.deepcopy(index["pages"][0])),
+            ),
+            (
+                "duplicate_route_record",
+                lambda index: index["pages"].__setitem__(-1, copy.deepcopy(index["pages"][0])),
+            ),
+            ("missing_page_field", lambda index: index["pages"][0].pop("path")),
+            (
+                "extra_page_field",
+                lambda index: index["pages"][0].__setitem__("owner", "other"),
+            ),
+            (
+                "title_drift",
+                lambda index: index["pages"][0].__setitem__("title", "Drifted title"),
+            ),
+            (
+                "description_drift",
+                lambda index: index["pages"][0].__setitem__("description", "Drifted description"),
+            ),
+            (
+                "arbitrary_page_path",
+                lambda index: index["pages"][0].__setitem__("path", "other/index.html"),
+            ),
+            (
+                "traversal_page_path",
+                lambda index: index["pages"][0].__setitem__("path", "../escape/index.html"),
+            ),
+            (
+                "arbitrary_url",
+                lambda index: index["pages"][0].__setitem__("url", "https://example.invalid/"),
+            ),
+            (
+                "noncanonical_url",
+                lambda index: index["pages"][0].__setitem__(
+                    "url", "https://apr.evemisslab.com/other/"
+                ),
+            ),
+            (
+                "empty_evidence_ids",
+                lambda index: index["pages"][0].__setitem__("evidence_ids", []),
+            ),
+            (
+                "unknown_evidence_id",
+                lambda index: index["pages"][0].__setitem__("evidence_ids", ["unknown_evidence"]),
+            ),
+            (
+                "reordered_evidence_ids",
+                lambda index: index["pages"][0]["evidence_ids"].reverse(),
+            ),
+            (
+                "drifted_evidence_ids",
+                lambda index: index["pages"][0]["evidence_ids"].__setitem__(0, "event_runtime"),
+            ),
+            (
+                "locale_mismatch",
+                lambda index: index["pages"][0].__setitem__("locale", "zh-TW"),
+            ),
+            (
+                "slug_mismatch",
+                lambda index: index["pages"][0].__setitem__("slug", "runtime"),
+            ),
+        )
+
+        for name, mutate in mutations:
+            with self.subTest(mutation=name):
+                self.assert_generated_index_mutation_is_rejected(mutate)
 
     def test_empty_existing_output_can_be_built_without_rmtree_on_the_caller_path(self):
         build = load_build()

@@ -247,6 +247,55 @@ class SiteDemoTests(unittest.TestCase):
                 next(iter(matrix.values()))["facts_to_verify"] = [forbidden]
                 self.assert_invalid_matrix(matrix)
 
+    def test_production_validator_rejects_plural_composite_mapping_keys(self):
+        for forbidden in (
+            "credentials",
+            "access_tokens",
+            "raw_responses",
+            "user_ids",
+            "file_paths",
+            "pointers",
+        ):
+            with self.subTest(forbidden=forbidden):
+                matrix = copy.deepcopy(self.module.export_scenarios())
+                next(iter(matrix.values()))["facts_to_verify"] = [{"safe": {forbidden: "public"}}]
+                with self.assertRaisesRegex(ValueError, "forbidden field name"):
+                    self.validator.validate_scenarios(matrix)
+
+    def test_production_validator_rejects_plural_composite_nested_string_values(self):
+        for forbidden in (
+            "credentials",
+            "access_tokens",
+            "raw_responses",
+            "user_ids",
+            "file_paths",
+            "pointers",
+        ):
+            placements = (
+                ("mapping", {"safe": forbidden}),
+                ("list", ["safe", forbidden]),
+                ("tuple", ("safe", forbidden)),
+            )
+            for placement, nested in placements:
+                with self.subTest(forbidden=forbidden, placement=placement):
+                    matrix = copy.deepcopy(self.module.export_scenarios())
+                    next(iter(matrix.values()))["facts_to_verify"] = [nested]
+                    with self.assertRaisesRegex(ValueError, "forbidden serialized content"):
+                        self.validator.validate_scenarios(matrix)
+
+    def test_production_validator_does_not_use_forbidden_substring_matching(self):
+        matrix = copy.deepcopy(self.module.export_scenarios())
+        next(iter(matrix.values()))["facts_to_verify"] = [
+            "identity",
+            "pathology",
+            "pointerless",
+            "tokenizer",
+            "credentialed",
+            "privateer",
+            "raw_responsiveness",
+        ]
+        self.assertIsNone(self.validator.validate_scenarios(matrix))
+
     def test_production_validator_rejects_boolean_or_non_numeric_number_fields(self):
         for field, invalid in (
             ("expected_gain", True),
