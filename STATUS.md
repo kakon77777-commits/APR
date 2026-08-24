@@ -40,18 +40,20 @@ The original cumulative v0.10 snapshot has been integrated into a standalone rep
   `b7bb18b077b67a1339e3bb811ce091c58b1a7052`.
 - The parent `evemisslab.com` APR index is merged as
   `f3c34a78322ed061ed4834ca7925656ff8683b32`.
+- The bilingual Why APR guide is merged as
+  `6ca53bf87ab90cace0a97dab0237b708e1fd6a19`.
 
 ## Published website verification
 
 - `apr.evemisslab.com` is live on Cloudflare Worker version
-  `6b32fb1f-392b-4574-8887-4b9ee26c43e5`.
-- EN/ZH routes, Lab routes, MCP, status, `llms.txt`, `ai/site.json`, and a 404 route returned
-  their expected production status codes.
+  `afd52b04-c208-47d6-8e9d-a243fa212ade`.
+- EN/ZH routes, Why APR routes, Lab routes, MCP, status, `llms.txt`, `ai/site.json`, and a 404
+  route returned their expected production status codes.
 - Production responses carried the restrictive CSP, `nosniff`, no-referrer,
   Permissions-Policy, and `Cache-Control: public, max-age=0, must-revalidate, no-transform`.
-- Exact live Chrome verification at 390×844 observed same-origin resources only, reduced-motion
-  preference, no horizontal overflow, correct default and conflict/exhausted Lab transitions,
-  and zero console warnings/errors.
+- Exact live Chrome verification at 390×844 observed the primary Why APR homepage CTA, bilingual
+  guide navigation, same-origin resources only, reduced-motion preference, no horizontal overflow,
+  correct default and conflict/exhausted Lab transitions, and zero console warnings/errors.
 - `evemisslab.com/` and `/zh/` each expose one APR link after the parent Pages deployment.
 
 ## Not claimed by this status

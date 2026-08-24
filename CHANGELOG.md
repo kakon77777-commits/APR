@@ -15,6 +15,7 @@ All notable changes to this repository are documented here.
 - A bounded cross-provider visual smoke test with structured facts, token/cost reporting, and a synthetic destructive-confirmation fixture.
 - A provider-neutral image-generation protocol and an explicit Google Vertex image-generator plugin with lazy OAuth authentication, bounded outputs, truthful MIME persistence, provenance hashes, and usage/cost metadata.
 - A real Vertex 1K image-generation experiment with a committed final visual artifact and human prompt-adherence review.
+- A bilingual Why APR plain-language guide that explains the multimodal Token, latency, API-cost, context-pressure, and scaling case without inventing a universal savings percentage.
 
 ### Changed
 
@@ -24,6 +25,7 @@ All notable changes to this repository are documented here.
 - Moved semantic fact volatility and TTL out of model output and into deterministic inspector configuration.
 - Added canonical candidate labels to the cross-provider experiment so equivalent concepts merge consistently without disclosing ground truth.
 - Added an optional `vertex` dependency group for Google Application Default Credentials while keeping the core runtime dependency-free.
+- Added a visually primary Why APR homepage entry while preserving the professional technical site and explicitly separating visual-causal-projection theory from implemented v0.10 capabilities.
 
 ### Fixed
 
