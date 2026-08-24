@@ -844,18 +844,32 @@ class SiteBuildTests(unittest.TestCase):
             self.assertNotIn(inaccurate_ui, lab_copy)
             self.assertNotIn(deferred_ui, lab_copy)
 
-    def test_each_locale_has_truthful_mcp_and_release_candidate_messages(self):
+    def test_each_locale_has_truthful_mcp_release_candidate_and_live_site_messages(self):
         with tempfile.TemporaryDirectory() as raw:
             output = Path(raw)
             self.build(output)
-            for _locale, prefix, release_candidate in (
-                ("en", Path(), "release candidate"),
-                ("zh-TW", Path("zh-TW"), "發布候選版"),
+            for _locale, prefix, release_candidate, live_site, stale_site_claim in (
+                (
+                    "en",
+                    Path(),
+                    "release candidate",
+                    "Live public site",
+                    "live deployment not yet claimed",
+                ),
+                (
+                    "zh-TW",
+                    Path("zh-TW"),
+                    "發布候選版",
+                    "公開網站已上線",
+                    "尚未宣稱正式上線",
+                ),
             ):
                 mcp = (output / prefix / "mcp/index.html").read_text(encoding="utf-8")
                 status = (output / prefix / "status/index.html").read_text(encoding="utf-8")
                 self.assertIn("not_implemented", mcp)
                 self.assertIn(release_candidate, status.lower())
+                self.assertIn(live_site, status)
+                self.assertNotIn(stale_site_claim, status)
 
     def test_built_css_contains_accessible_apr_visual_system(self):
         with tempfile.TemporaryDirectory() as raw:
